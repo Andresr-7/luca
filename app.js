@@ -180,7 +180,7 @@ function renderAuth(modo){
       ${P.apple?`<button type="button" class="oa" id="aApple">${ASVG}<span>Continuar con Apple</span></button>`:""}
       ${P.google?`<button type="button" class="oa" id="aGoogle">${GSVG}<span>Continuar con Google</span></button>`:""}
     </div><p class="or">o con tu correo</p>`:""}
-    <div class="cats" role="tablist" aria-label="Entrar o crear cuenta">
+    <div class="cats seg" role="tablist" aria-label="Entrar o crear cuenta">
       <button type="button" role="tab" aria-selected="${!crear}" aria-pressed="${!crear}" id="tEntrar">Ya tengo cuenta</button>
       <button type="button" role="tab" aria-selected="${crear}" aria-pressed="${crear}" id="tCrear">Crear cuenta</button>
     </div>
@@ -521,7 +521,7 @@ function gastoSheet(g){
   const acct=()=>{const k=key();return k.startsWith("c:")?S.cuentas.find(x=>x.id===k.slice(2)):null};
   openSheet(isNew?"Nuevo gasto":"Editar gasto",`<form id="fg">
     <label>Pagado con<select id="gMedio">${opts.map(o=>`<option value="${esc(o.k)}" ${o.k===sel?"selected":""}>${esc(o.l)}</option>`).join("")}</select></label>
-    <div class="cats" id="gCur" hidden><button type="button" data-cur="cop">En pesos (COP)</button><button type="button" data-cur="usd">En dólares (US$)</button></div>
+    <div class="cats seg" id="gCur" hidden><button type="button" data-cur="cop">En pesos (COP)</button><button type="button" data-cur="usd">En dólares (US$)</button></div>
     <label><span id="gValLbl">¿Cuánto?</span><input id="gVal" class="money num" autocomplete="off"><span class="hint" id="gConv" hidden></span></label>
     <div><div class="eyebrow" style="margin-bottom:6px">Categoría</div><div class="cats" id="gCats">${cs.map(c=>`<button type="button" aria-pressed="${c===cat}" data-c="${esc(c)}">${esc(c)}</button>`).join("")}</div></div>
     <label>Nota (opcional)<input id="gNota" placeholder="Ej. almuerzo, Uber, Netflix" value="${esc(g.nota)}"></label>
@@ -616,7 +616,7 @@ function movSheet(c){
   let tipo="salida";const otras=S.cuentas.filter(x=>x.id!==c.id);
   openSheet("Movimiento en "+c.nombre,`<form id="fmv">
     <p class="muted" style="margin:0">Saldo actual: <b class="num">${fmt(c.saldo)}</b></p>
-    <div class="cats" id="mvTipo"><button type="button" data-t="entrada" aria-pressed="false">Entró plata</button><button type="button" data-t="salida" aria-pressed="true">Salió plata</button>${otras.length?'<button type="button" data-t="transferencia" aria-pressed="false">Pasar a otra cuenta</button>':""}</div>
+    <div class="cats seg" id="mvTipo"><button type="button" data-t="entrada" aria-pressed="false">Entró plata</button><button type="button" data-t="salida" aria-pressed="true">Salió plata</button>${otras.length?'<button type="button" data-t="transferencia" aria-pressed="false">Pasar a otra cuenta</button>':""}</div>
     <label>¿Cuánto?<input id="mvVal" class="money num" inputmode="numeric" placeholder="$ 0"></label>
     <label id="mvDestW" hidden>¿A qué cuenta?<select id="mvDest">${otras.map(o=>`<option value="${esc(o.id)}">${esc(o.nombre)}</option>`).join("")}</select></label>
     <label>Nota<input id="mvNota" placeholder="Ej. retiro cajero, me consignaron, Nequi a Bancolombia"></label>
@@ -687,7 +687,7 @@ function paySheet(t){
     <div class="actions">${t.minimoUsd?`<button type="button" data-fill="${fmtU(t.minimoUsd)}">El mínimo (${fmtU(t.minimoUsd)})</button>`:""}${t.saldoUsd?`<button type="button" data-fill="${fmtU(t.saldoUsd)}">Todo (${fmtU(t.saldoUsd)})</button>`:""}</div>
     <label>¿Cuántos pesos te costó?<input id="pCop" class="num" inputmode="numeric" placeholder="Se calcula con el dólar del día"><span class="hint">Si lo dejas vacío se calcula con el dólar a ${fmt(trm())}.</span></label>`;
   openSheet("Pago a "+t.nombre,`<form id="fp">
-    ${t.usd?`<div class="cats" id="pCur"><button type="button" aria-pressed="true" data-cur="cop">Deuda en pesos</button><button type="button" aria-pressed="false" data-cur="usd">Deuda en dólares</button></div>`:""}
+    ${t.usd?`<div class="cats seg" id="pCur"><button type="button" aria-pressed="true" data-cur="cop">Deuda en pesos</button><button type="button" aria-pressed="false" data-cur="usd">Deuda en dólares</button></div>`:""}
     <div id="pBody" class="stack">${body()}</div>
     ${S.cuentas.length?`<label>¿Desde qué cuenta pagaste?<select id="pCuenta">${S.cuentas.map((c,i)=>`<option value="${esc(c.id)}" ${i===0?"selected":""}>${esc(c.nombre)} (${fmt(c.saldo)})</option>`).join("")}<option value="">No descontar de una cuenta</option></select></label>`:""}
     <label>Fecha<input id="pFecha" type="date" value="${today()}"></label>
