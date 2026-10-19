@@ -49,6 +49,8 @@ Esa clave es pública a propósito: la seguridad la ponen las reglas de la base 
 
 ## 4. Configurar el inicio de sesión
 
+**Modo pruebas (así está ahora):** entrada con **correo + contraseña** y la opción *Confirm email* apagada en Supabase (Authentication → Sign In / Providers). La cuenta se crea al instante y no se envía ningún correo. Antes de lanzar, vuelve a prender *Confirm email* y configura el correo (abajo).
+
 En Supabase: **Authentication → URL Configuration**
 - **Site URL:** `https://TU-USUARIO.github.io/luca/`
 - **Redirect URLs:** agrega esa misma dirección.

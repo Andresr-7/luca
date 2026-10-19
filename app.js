@@ -171,45 +171,47 @@ const GSVG='<svg aria-hidden="true" width="20" height="20" viewBox="0 0 48 48"><
 const ASVG='<svg aria-hidden="true" width="18" height="20" viewBox="0 0 17 20" fill="currentColor"><path d="M14.2 10.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.3 10.2.8 1.2 1.8 2.6 3.1 2.5 1.3-.1 1.7-.8 3.3-.8 1.5 0 1.9.8 3.3.8 1.4 0 2.2-1.2 3-2.5 1-1.4 1.4-2.8 1.4-2.9-.1 0-2.5-1-2.5-3.9zM11.6 3c.7-.8 1.2-2 1-3.1-1 0-2.2.7-2.9 1.5-.6.7-1.2 1.9-1 3 1.1.1 2.2-.6 2.9-1.4z"/></svg>';
 const redirectURL=()=>location.origin+location.pathname;
 function authMsg(t){const m=$("#authMsg");m.textContent=t||"";m.hidden=!t}
-function renderAuth(step,email){
+function renderAuth(modo){
+  modo=modo==="crear"?"crear":"entrar";
   const P=(window.CONFIG&&CONFIG.PROVEEDORES)||{};
   authMsg("");
-  if(step==="codigo"){
-    $("#authBody").innerHTML=`<form id="fCode" novalidate>
-      <p>Te enviamos un correo a <b>${esc(email)}</b> (revisa también spam). <b>Toca el enlace del correo en este mismo dispositivo</b> y entras directo. Si el correo trae un código de 6 dígitos, escríbelo aquí.</p>
-      <label>Código<input id="aCode" name="code" class="money num" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456" spellcheck="false"></label>
-      <button class="primary" type="submit">Entrar con el código</button>
-      <button type="button" class="ghost" id="aBack">Usar otro correo</button></form>`;
-    setTimeout(()=>$("#aCode").focus(),60);
-    $("#aBack").onclick=()=>renderAuth("inicio");
-    $("#fCode").onsubmit=async e=>{e.preventDefault();const token=$("#aCode").value.replace(/\D/g,"");
-      if(token.length<6){authMsg("Escribe el código completo que te llegó al correo.");$("#aCode").focus();return}
-      const b=e.submitter||$("#fCode button.primary");b.disabled=true;b.textContent="Entrando…";
-      const {error}=await sb.auth.verifyOtp({email,token,type:"email"});
-      if(error){b.disabled=false;b.textContent="Entrar con el código";authMsg("El código no es correcto o ya venció. Revísalo o pide uno nuevo.");$("#aCode").focus()}};
-    return;
-  }
+  const crear=modo==="crear";
   $("#authBody").innerHTML=`${P.google||P.apple?`<div class="oauth">
       ${P.apple?`<button type="button" class="oa" id="aApple">${ASVG}<span>Continuar con Apple</span></button>`:""}
       ${P.google?`<button type="button" class="oa" id="aGoogle">${GSVG}<span>Continuar con Google</span></button>`:""}
-    </div><p class="or">o entra con tu correo</p>`:""}
-    <form id="fMail" novalidate>
+    </div><p class="or">o con tu correo</p>`:""}
+    <div class="cats" role="tablist" aria-label="Entrar o crear cuenta">
+      <button type="button" role="tab" aria-selected="${!crear}" aria-pressed="${!crear}" id="tEntrar">Ya tengo cuenta</button>
+      <button type="button" role="tab" aria-selected="${crear}" aria-pressed="${crear}" id="tCrear">Crear cuenta</button>
+    </div>
+    <form id="fPass" novalidate>
       <label>Correo<input id="aMail" name="email" type="email" autocomplete="email" spellcheck="false" placeholder="tucorreo@ejemplo.com"></label>
-      <button class="primary" type="submit">Enviarme el acceso</button>
+      <label>Contraseña<input id="aPass" name="password" type="password" autocomplete="${crear?"new-password":"current-password"}" placeholder="${crear?"Mínimo 6 caracteres":"Tu contraseña"}"></label>
+      <button class="primary" type="submit">${crear?"Crear mi cuenta":"Entrar"}</button>
     </form>`;
   const oauth=async prov=>{authMsg("");const {error}=await sb.auth.signInWithOAuth({provider:prov,options:{redirectTo:redirectURL()}});if(error)authMsg("No se pudo abrir el inicio de sesión. Inténtalo de nuevo.")};
   $("#aGoogle")&&($("#aGoogle").onclick=()=>oauth("google"));
   $("#aApple")&&($("#aApple").onclick=()=>oauth("apple"));
-  $("#fMail").onsubmit=async e=>{e.preventDefault();const email=$("#aMail").value.trim().toLowerCase();
+  $("#tEntrar").onclick=()=>renderAuth("entrar");
+  $("#tCrear").onclick=()=>renderAuth("crear");
+  $("#fPass").onsubmit=async e=>{e.preventDefault();
+    const email=$("#aMail").value.trim().toLowerCase(),password=$("#aPass").value;
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){authMsg("Escribe un correo válido, por ejemplo nombre@gmail.com.");$("#aMail").focus();return}
-    const b=e.submitter||$("#fMail button.primary");b.disabled=true;b.textContent="Enviando…";
-    const {error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:true,emailRedirectTo:redirectURL()}});
-    b.disabled=false;b.textContent="Enviarme el acceso";
-    if(error){authMsg(/rate|seconds|limit/i.test(error.message||"")?"Ya pediste un código hace poco. Espera un minuto y vuelve a intentarlo.":"No se pudo enviar el código. Revisa el correo e inténtalo de nuevo.");return}
-    renderAuth("codigo",email)};
+    if(password.length<6){authMsg("La contraseña debe tener al menos 6 caracteres.");$("#aPass").focus();return}
+    const b=e.submitter||$("#fPass button.primary"),txt=b.textContent;b.disabled=true;b.textContent=crear?"Creando cuenta…":"Entrando…";
+    const {data,error}=crear?await sb.auth.signUp({email,password}):await sb.auth.signInWithPassword({email,password});
+    b.disabled=false;b.textContent=txt;
+    if(error){const m=error.message||"";
+      authMsg(/already|registered|exists/i.test(m)?"Ese correo ya tiene cuenta. Toca “Ya tengo cuenta” y entra con tu contraseña."
+        :/invalid login|credentials/i.test(m)?"El correo o la contraseña no coinciden. Revísalos o crea una cuenta nueva."
+        :/rate|seconds|limit/i.test(m)?"Muchos intentos seguidos. Espera un minuto y vuelve a intentarlo."
+        :/password/i.test(m)?"Esa contraseña no sirve: usa al menos 6 caracteres."
+        :"No se pudo entrar. Revisa tu conexión e inténtalo de nuevo.");return}
+    if(crear&&data&&!data.session)authMsg("Cuenta creada. Revisa tu correo para confirmarla y luego entra.");
+  };
 }
 function pantalla(cual){$("#boot").hidden=cual!=="boot";$("#auth").hidden=cual!=="auth";$("#app").hidden=cual!=="app";$("#fab").hidden=cual!=="app"}
-function showAuth(){pantalla("auth");renderAuth("inicio")}
+function showAuth(){pantalla("auth");renderAuth("entrar")}
 async function start(u){
   if(user&&user.id===u.id)return;
   user=u;perfil={plan:"free",plan_until:null};emptyState();cacheLoad();
