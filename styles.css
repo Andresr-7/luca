@@ -65,6 +65,7 @@ section.block>h2,section.block>.row-head h2{padding-inline:4px}
 .appbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:14px 0}
 .brand{display:flex;align-items:center;gap:9px;font-size:19px;font-weight:600;letter-spacing:-0.02em}
 .brand-mark{width:28px;height:28px;border-radius:7px;background:var(--primary);color:#fff;display:grid;place-items:center;font-size:16px;font-weight:700;letter-spacing:0}
+.brand-mark svg{width:100%;height:100%;display:block}
 .appbar .new{display:none}
 header.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;padding-top:4px}
 header.top .eyebrow{margin-bottom:2px;font-weight:600;color:var(--mute);font-size:13px;text-transform:uppercase;letter-spacing:.02em}
