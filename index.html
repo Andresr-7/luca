@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="es-CO">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Luca</title>
+<meta name="description" content="Luca: tus tarjetas, tu quincena y tus gastos en un solo lugar. Pesos y dólares, agenda de pagos y cuentas de ahorro.">
+<meta name="theme-color" content="#E8EBE6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E120C" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Luca">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta property="og:title" content="Luca">
+<meta property="og:description" content="Tus tarjetas, tu quincena y tus gastos en un solo lugar.">
+<meta property="og:image" content="icons/icon-512.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="boot" class="bootscreen">Cargando…</div>
+
+<div class="wrap auth" id="auth" hidden>
+  <div class="auth-card">
+    <div class="brand" translate="no"><span class="brand-mark" aria-hidden="true">$</span>Luca</div>
+    <h1>Tu plata, clara.</h1>
+    <p class="lead">Tarjetas en pesos y dólares, tu quincena, tus cuentas de ahorro y en qué se va cada peso. En el celular y en el computador.</p>
+    <div id="authBody"></div>
+    <p class="auth-msg" id="authMsg" role="alert" hidden></p>
+    <p class="auth-foot">Al entrar aceptas la <a href="privacidad.html">política de privacidad</a>. Tus datos solo los ves tú.</p>
+  </div>
+</div>
+
+<div class="wrap" id="app" hidden>
+  <header class="appbar">
+    <div class="brand" translate="no"><span class="brand-mark" aria-hidden="true">$</span>Luca</div>
+    <nav class="tabs" aria-label="Secciones"><div class="in">
+      <button data-tab="resumen" aria-current="page"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Resumen</button>
+      <button data-tab="agenda"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Agenda</button>
+      <button data-tab="tarjetas"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M2 10h20M6 15h4"/></svg>Cuentas</button>
+      <button data-tab="movs"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6"/></svg>Movimientos</button>
+      <button data-tab="mas"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Más</button>
+    </div></nav>
+    <button class="primary new" id="fab2">+ Gasto</button>
+  </header>
+
+  <header class="top">
+    <div>
+      <div class="eyebrow" id="monthLabel">Octubre 2026</div>
+      <h1 id="pageTitle">Resumen</h1>
+    </div>
+    <span class="chip" id="syncChip">Conectando…</span>
+  </header>
+
+  <!-- RESUMEN -->
+  <main id="v-resumen" class="view">
+    <section class="hero" aria-labelledby="heroLbl">
+      <p class="eyebrow" id="heroLbl">Te queda este mes (estimado)</p>
+      <div class="big num" id="dispo">—</div>
+      <p class="sub" id="dispoSub">Pon cuánto te pagan en la pestaña Más para calcular esto.</p>
+      <div class="hbtns"><button id="heroIng">+ Me pagaron</button><button data-go="agenda">Ver agenda</button></div>
+    </section>
+    <div class="payday" id="paydayBox"></div>
+    <div class="grid2">
+      <div class="stat"><span class="eyebrow">Deuda total</span><span class="v num" id="sDeuda">—</span><span class="h" id="sDeudaH"></span></div>
+      <div class="stat"><span class="eyebrow">Mínimos por pagar</span><span class="v num" id="sMin">—</span><span class="h" id="sMinH"></span></div>
+      <div class="stat"><span class="eyebrow">Gastado este mes</span><span class="v num" id="sGas">—</span><span class="h" id="sGasH"></span></div>
+      <div class="stat"><span class="eyebrow">Gastos fijos</span><span class="v num" id="sFij">—</span><span class="h" id="sFijH"></span></div>
+    </div>
+    <section class="ciclo" id="cicloBox" aria-label="Gasto por día"></section>
+    <section class="block" id="catBlock">
+      <div class="row-head"><h2>¿En qué se va la plata?</h2></div>
+      <div id="porCat"></div>
+    </section>
+    <section class="block" id="acctResumen"></section>
+    <section class="block" id="deudasBlock">
+      <div class="row-head"><h2>Deudas por moneda</h2><button class="ghost" data-go="mas">Cambiar dólar</button></div>
+      <div class="list" id="deudasBox"></div>
+    </section>
+    <section class="block" id="metasResumen"></section>
+  </main>
+
+  <!-- AGENDA -->
+  <main id="v-agenda" class="view" hidden>
+    <p class="muted" style="max-width:60ch">Los próximos 45 días: cuándo te pagan, cuándo vence cada tarjeta y tus gastos fijos. Marca los fijos cuando los pagues.</p>
+    <div id="agendaList"></div>
+  </main>
+
+  <!-- CUENTAS Y TARJETAS -->
+  <main id="v-tarjetas" class="view" hidden>
+    <section class="block">
+      <div class="row-head"><h2>Cuentas de ahorro</h2><span class="chip in num" id="acctTotal"></span></div>
+      <div id="acctList" class="stack"></div>
+      <button id="addAcct">+ Agregar cuenta de ahorro</button>
+    </section>
+    <section class="block">
+      <div class="row-head"><h2>Tarjetas de crédito</h2></div>
+      <div id="cardsList" class="stack"></div>
+      <button id="addCard">+ Agregar tarjeta o crédito</button>
+    </section>
+  </main>
+
+  <!-- MOVIMIENTOS -->
+  <main id="v-movs" class="view" hidden>
+    <section class="block">
+      <div class="row-head"><h2 id="gastosTotal">Gastos</h2>
+        <select id="mesSel" aria-label="Mes" style="width:auto"></select></div>
+      <div id="gastosList"></div>
+    </section>
+    <section class="block">
+      <div class="row-head"><h2>Ingresos recibidos</h2><button class="ghost" id="addIng">+ Me pagaron</button></div>
+      <div id="ingList"></div>
+    </section>
+    <section class="block">
+      <h2>Movimientos de cuentas</h2>
+      <div id="movCtaList"></div>
+    </section>
+    <section class="block">
+      <h2>Pagos a tarjetas</h2>
+      <div id="pagosList"></div>
+    </section>
+  </main>
+
+  <!-- MÁS -->
+  <main id="v-mas" class="view" hidden>
+    <section class="block">
+      <h2>Tu cuenta</h2>
+      <div class="panel" id="cuentaPanel"></div>
+      <input type="file" id="fileImport" accept="application/json,.json" hidden>
+    </section>
+    <section class="block">
+      <h2>Tu sueldo</h2>
+      <form id="fIngreso" class="panel">
+        <label>Cuánto te llega cada pago (aprox.)<input id="ingValor" name="ingValor" class="money num" inputmode="numeric" placeholder="$ 0"></label>
+        <label>Días del mes en que te pagan<input id="ingDias" name="ingDias" inputmode="numeric" placeholder="Ej. 15, 30…"><span class="hint">Sepáralos con coma. Si el mes no tiene día 30 o 31, se toma el último día.</span></label>
+        <label>Otros ingresos al mes (opcional)<input id="ingOtros" name="ingOtros" class="num" inputmode="numeric" placeholder="$ 0"></label>
+        <button class="primary" type="submit">Guardar sueldo</button>
+      </form>
+    </section>
+    <section class="block">
+      <h2>Precio del dólar</h2>
+      <form id="fTrm" class="panel">
+        <label>Tasa Bancolombia para tarjetas<input id="bancoVal" name="bancoVal" class="money num" inputmode="decimal" placeholder="Cópiala de la app Bancolombia…"><span class="hint" id="bancoHint"></span></label>
+        <label>TRM oficial<input id="trmVal" name="trmVal" class="num" inputmode="decimal" placeholder="$ 0"><span class="hint" id="trmHint"></span></label>
+        <button type="submit">Guardar tasas</button>
+      </form>
+    </section>
+    <section class="block">
+      <h2>Gastos fijos del mes</h2>
+      <div id="fijosList"></div>
+      <form id="fFijo" class="panel">
+        <div class="three">
+          <label>Nombre<input id="fijoNom" name="fijoNom" placeholder="Ej. Plan celular…"></label>
+          <label>Valor<input id="fijoVal" name="fijoVal" class="num" inputmode="numeric" placeholder="$ 0"></label>
+          <label>Día<input id="fijoDia" name="fijoDia" type="number" min="1" max="31" inputmode="numeric" placeholder="5"></label>
+        </div>
+        <button type="submit">+ Agregar gasto fijo</button>
+      </form>
+    </section>
+    <section class="block">
+      <h2>Presupuesto por categoría</h2>
+      <p class="muted small" style="max-width:60ch">Pon un límite al mes para cada categoría. Te avisa en el Resumen si te pasas. Déjalo vacío si no quieres límite.</p>
+      <div class="panel" id="presuList"></div>
+      <form id="fCat" class="panel">
+        <label>Nueva categoría<input id="catNom" name="catNom" placeholder="Ej. Gimnasio, PC…"></label>
+        <button type="submit">+ Agregar categoría</button>
+      </form>
+    </section>
+    <section class="block">
+      <div class="row-head"><h2>Metas de ahorro</h2><button class="ghost" id="addMeta">+ Nueva meta</button></div>
+      <div id="metasList" class="stack"></div>
+    </section>
+  </main>
+</div>
+
+
+<button class="fab" id="fab">+ Gasto</button>
+
+<div class="sheet-back" id="sheetBack" hidden><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="sheet-head"><h2 id="sheetTitle"></h2><button class="x" id="sheetClose" aria-label="Cerrar">✕</button></div>
+  <div id="sheetBody"></div>
+</div></div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));</script>
+</body>
+</html>
