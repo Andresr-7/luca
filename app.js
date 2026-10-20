@@ -876,6 +876,7 @@ $("#fileImport").addEventListener("change",e=>{const f=e.target.files&&e.target.
 /* ---------- Tu cuenta ---------- */
 const APP_VERSION="1.1.0";
 const REPO_URL="https://github.com/Andresr-7/luca";
+const SOPORTE="luca.app.col@gmail.com";
 function nombreUsuario(){
   const md=(user&&user.user_metadata)||{};
   const n=(S.ajustes&&S.ajustes.nombre)||md.nombre||md.full_name||md.name||"";
@@ -973,6 +974,8 @@ if(esAndroidWeb())$("#androidDl").hidden=false;
   const link=(href,txt,ext)=>`<a class="item row-btn" href="${href}"${ext?' target="_blank" rel="noopener"':""}><span class="main">${txt}</span><span class="chev" aria-hidden="true">›</span></a>`;
   el.innerHTML=`<div class="list">
     ${link(REPO_URL+"/issues/new","Reportar un problema o sugerir algo",true)}
+    ${link("mailto:"+SOPORTE+"?subject="+encodeURIComponent("Luca "+APP_VERSION),"Escribir a soporte")}
+    <div class="item"><span class="main">Correo de soporte</span><span class="amt muted" style="user-select:all">${SOPORTE}</span></div>
     ${esAndroidWeb()?link("descargas/Luca.apk","Descargar la app para Android"):""}
     ${link("privacidad.html","Política de privacidad")}
     ${link("terminos.html","Términos de uso")}

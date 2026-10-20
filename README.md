@@ -161,6 +161,7 @@ supabase/functions/payment-webhook/  base para activar cobros
 - App en vivo: https://andresr-7.github.io/luca/
 - Android: APK en https://andresr-7.github.io/luca/descargas/Luca.apk (paquete `io.github.andresr7.luca`). La verificación para abrir sin barra del navegador está en https://andresr-7.github.io/.well-known/assetlinks.json (repo `andresr-7.github.io`).
 - **La llave de firma de Android (`signing.keystore` y `signing-key-info.txt`) NO está en este repositorio.** Sin ella no se puede actualizar la app en Google Play: guárdala en un lugar seguro.
+- Correo de soporte de Luca (público): luca.app.col@gmail.com. Úsalo para Brevo, Google Cloud, Google Play y pagos; nunca un correo personal.
 - Entrada: correo + contraseña, código por correo, recuperación con código, verificación al crear cuenta. Google y Apple se prenden en `config.js` → `PROVEEDORES`.
 
 ### Activar códigos por correo para todos (gratis, 5 min)
