@@ -153,3 +153,27 @@ icons/                íconos
 supabase/schema.sql   tablas, seguridad, planes y vistas para análisis
 supabase/functions/payment-webhook/  base para activar cobros
 ```
+
+---
+
+## Estado actual (v1.1)
+
+- App en vivo: https://andresr-7.github.io/luca/
+- Android: APK en https://andresr-7.github.io/luca/descargas/Luca.apk (paquete `io.github.andresr7.luca`). La verificación para abrir sin barra del navegador está en https://andresr-7.github.io/.well-known/assetlinks.json (repo `andresr-7.github.io`).
+- **La llave de firma de Android (`signing.keystore` y `signing-key-info.txt`) NO está en este repositorio.** Sin ella no se puede actualizar la app en Google Play: guárdala en un lugar seguro.
+- Entrada: correo + contraseña, código por correo, recuperación con código, verificación al crear cuenta. Google y Apple se prenden en `config.js` → `PROVEEDORES`.
+
+### Activar códigos por correo para todos (gratis, 5 min)
+1. Crea una cuenta gratis en [brevo.com](https://www.brevo.com) (300 correos al día) o usa tu Gmail con una *contraseña de aplicación*.
+2. En Brevo: **SMTP & API → SMTP** y genera una clave SMTP. Verifica tu correo como remitente.
+3. En Supabase: **Authentication → Emails → SMTP Settings → Enable custom SMTP**: host `smtp-relay.brevo.com`, puerto `587`, usuario y clave de Brevo, remitente tu correo verificado, nombre `Luca`.
+4. En **Authentication → Emails → Templates**, en *Confirm sign up*, *Magic link or OTP* y *Reset password*, deja el cuerpo así (cambia el título en cada uno):
+   ```html
+   <h2>Tu código de Luca</h2>
+   <p style="font-size:32px;font-weight:600;letter-spacing:6px">{{ .Token }}</p>
+   <p>Vence en una hora. Si no lo pediste, ignora este correo.</p>
+   ```
+5. En **Authentication → Sign In / Providers** vuelve a prender **Confirm email**. La app ya pide el código al crear la cuenta.
+
+### Activar Google (gratis, 10 min)
+Sigue el paso 4 → *Google* de arriba. Al final, en `config.js` cambia `google: false` por `google: true`.

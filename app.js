@@ -967,10 +967,13 @@ function renderPlan(){
 }
 
 /* ---------- Ayuda y acerca de ---------- */
+function esAndroidWeb(){return /Android/i.test(navigator.userAgent)&&!matchMedia("(display-mode: standalone)").matches&&!document.referrer.startsWith("android-app://")}
+if(esAndroidWeb())$("#androidDl").hidden=false;
 (()=>{const el=$("#ayudaPanel");if(!el)return;
   const link=(href,txt,ext)=>`<a class="item row-btn" href="${href}"${ext?' target="_blank" rel="noopener"':""}><span class="main">${txt}</span><span class="chev" aria-hidden="true">›</span></a>`;
   el.innerHTML=`<div class="list">
     ${link(REPO_URL+"/issues/new","Reportar un problema o sugerir algo",true)}
+    ${esAndroidWeb()?link("descargas/Luca.apk","Descargar la app para Android"):""}
     ${link("privacidad.html","Política de privacidad")}
     ${link("terminos.html","Términos de uso")}
     <div class="item"><span class="main">Versión</span><span class="amt muted">${APP_VERSION}</span></div></div>

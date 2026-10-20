@@ -318,3 +318,6 @@ button.pw-eye:hover{box-shadow:none;opacity:.7}
 .steps{display:flex;gap:6px;margin-bottom:4px}
 .steps i{height:4px;flex:1;border-radius:99px;background:var(--fill)}
 .steps i.on{background:var(--primary)}
+
+.android-dl{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--surface);border-radius:var(--r);padding:14px 16px;color:var(--accent-ink);text-decoration:none;font-weight:600}
+.android-dl .hint{font-weight:400}
