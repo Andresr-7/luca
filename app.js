@@ -143,83 +143,150 @@ function leerRespaldo(file){
   fr.readAsText(file);
 }
 
-/* ---------- Tu cuenta ---------- */
-function renderCuenta(){
-  const el=$("#cuentaPanel");if(!el||!user)return;
-  const prov=(user.app_metadata&&user.app_metadata.provider)||"email";
-  const html=`<div class="row-head"><div style="min-width:0"><div style="font-weight:700;overflow-wrap:anywhere">${esc(user.email||"Cuenta sin correo")}</div>
-      <div class="hint">Entraste con ${({google:"Google",apple:"Apple",email:"tu correo"})[prov]||esc(prov)}</div></div>
-      <span class="chip ${isPro()?"in":""}">${isPro()?"Plan Pro":"Plan gratis"}</span></div>
-    ${CONFIG.PAGOS&&CONFIG.PAGOS.activo&&!isPro()?'<button class="primary" id="cPro">Mejorar a Pro</button>':""}
-    <div class="actions"><button id="cExport">Descargar respaldo</button><button id="cImport">Importar respaldo</button><button id="cOut">Cerrar sesión</button></div>
-    <button class="danger" id="cDel">Eliminar mi cuenta y mis datos</button>`;
-  if(el.dataset.h===html)return;el.dataset.h=html;el.innerHTML=html;
-  $("#cPro")&&($("#cPro").onclick=irAPagar);
-  $("#cExport").onclick=exportar;
-  $("#cImport").onclick=()=>$("#fileImport").click();
-  $("#cOut").onclick=async()=>{await sb.auth.signOut();stop()};
-  confirmBtn($("#cDel"),async()=>{
-    const {error}=await sb.rpc("delete_my_account");
-    if(error){toast("No se pudo eliminar la cuenta. Inténtalo de nuevo.");return}
-    try{localStorage.removeItem(cacheKey())}catch(e){}
-    await sb.auth.signOut();stop();toast("Tu cuenta y tus datos fueron eliminados");
-  },"Toca otra vez: se borra todo y no se puede deshacer");
-}
-
-/* ---------- Entrar: Google, Apple o código por correo ---------- */
+/* ---------- Entrar: Google, Apple, correo + contraseña, códigos por correo ---------- */
 const GSVG='<svg aria-hidden="true" width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>';
 const ASVG='<svg aria-hidden="true" width="18" height="20" viewBox="0 0 17 20" fill="currentColor"><path d="M14.2 10.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.3 10.2.8 1.2 1.8 2.6 3.1 2.5 1.3-.1 1.7-.8 3.3-.8 1.5 0 1.9.8 3.3.8 1.4 0 2.2-1.2 3-2.5 1-1.4 1.4-2.8 1.4-2.9-.1 0-2.5-1-2.5-3.9zM11.6 3c.7-.8 1.2-2 1-3.1-1 0-2.2.7-2.9 1.5-.6.7-1.2 1.9-1 3 1.1.1 2.2-.6 2.9-1.4z"/></svg>';
 const redirectURL=()=>location.origin+location.pathname;
-function authMsg(t){const m=$("#authMsg");m.textContent=t||"";m.hidden=!t}
-function renderAuth(modo){
-  modo=modo==="crear"?"crear":"entrar";
-  const P=(window.CONFIG&&CONFIG.PROVEEDORES)||{};
-  authMsg("");
-  const crear=modo==="crear";
-  $("#authBody").innerHTML=`${P.google||P.apple?`<div class="oauth">
+const MAIL_RE=/^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+let authEmail="",pendingRecovery=false,recoveryInForm=false,resendTimer=null;
+function authMsg(t,ok){const m=$("#authMsg");m.textContent=t||"";m.hidden=!t;m.classList.toggle("ok",!!ok)}
+function authErr(error){
+  const m=(error&&error.message)||"";
+  if(/already|registered|exists/i.test(m))return "Ese correo ya tiene cuenta. Entra con tu contraseña o con un código.";
+  if(/invalid login|credentials/i.test(m))return "El correo o la contraseña no coinciden. Revísalos o entra con un código.";
+  if(/not confirmed/i.test(m))return "Falta confirmar tu correo. Te enviamos un código para hacerlo.";
+  if(/expired|invalid.*(token|otp)|token.*(invalid|expired)/i.test(m))return "El código no es correcto o ya venció. Revísalo o pide uno nuevo.";
+  if(/rate|seconds|limit|too many/i.test(m))return "Hiciste varios intentos seguidos. Espera un minuto y vuelve a intentarlo.";
+  if(/sending|smtp|email.*(send|deliver)/i.test(m))return "No pudimos enviar el correo en este momento. Inténtalo más tarde o entra con tu contraseña.";
+  if(/signups? not allowed|disabled/i.test(m))return "Por ahora no se pueden crear cuentas nuevas.";
+  if(/password/i.test(m))return "Esa contraseña no sirve: usa al menos 8 caracteres.";
+  return "No se pudo completar. Revisa tu conexión e inténtalo de nuevo.";
+}
+const pwField=(id,label,auto,ph)=>`<label>${label}<span class="pw"><input id="${id}" name="${id}" type="password" autocomplete="${auto}" placeholder="${ph}"><button type="button" class="pw-eye" data-eye="${id}" aria-label="Mostrar contraseña">Ver</button></span></label>`;
+const codeField=()=>`<label>Código de 6 dígitos<input id="aCode" name="code" class="code-in num" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="••••••" spellcheck="false"></label>`;
+function busy(b,t){const old=b.textContent;b.disabled=true;b.textContent=t;return()=>{b.disabled=false;b.textContent=old}}
+function startResend(fn){
+  const b=$("#aResend");if(!b)return;let n=60;clearInterval(resendTimer);
+  const tick=()=>{if(!b.isConnected){clearInterval(resendTimer);return}if(n<=0){b.disabled=false;b.textContent="Reenviar código";clearInterval(resendTimer);return}b.disabled=true;b.textContent="Reenviar en "+n+" s";n--};
+  tick();resendTimer=setInterval(tick,1000);
+  b.onclick=async()=>{const {error}=await fn();if(error){authMsg(authErr(error));return}authMsg("Te enviamos un código nuevo.",true);startResend(fn)};
+}
+function renderAuth(paso,email){
+  paso=paso||"entrar";if(email!=null)authEmail=email;
+  const P=(window.CONFIG&&CONFIG.PROVEEDORES)||{};authMsg("");
+  const B=$("#authBody");const mailVal=esc(authEmail);
+  const social=(P.google||P.apple)?`<div class="oauth">
       ${P.apple?`<button type="button" class="oa" id="aApple">${ASVG}<span>Continuar con Apple</span></button>`:""}
       ${P.google?`<button type="button" class="oa" id="aGoogle">${GSVG}<span>Continuar con Google</span></button>`:""}
-    </div><p class="or">o con tu correo</p>`:""}
-    <div class="cats seg" role="tablist" aria-label="Entrar o crear cuenta">
-      <button type="button" role="tab" aria-selected="${!crear}" aria-pressed="${!crear}" id="tEntrar">Ya tengo cuenta</button>
-      <button type="button" role="tab" aria-selected="${crear}" aria-pressed="${crear}" id="tCrear">Crear cuenta</button>
-    </div>
-    <form id="fPass" novalidate>
-      <label>Correo<input id="aMail" name="email" type="email" autocomplete="email" spellcheck="false" placeholder="tucorreo@ejemplo.com"></label>
-      <label>Contraseña<input id="aPass" name="password" type="password" autocomplete="${crear?"new-password":"current-password"}" placeholder="${crear?"Mínimo 6 caracteres":"Tu contraseña"}"></label>
-      <button class="primary" type="submit">${crear?"Crear mi cuenta":"Entrar"}</button>
-    </form>`;
+    </div><p class="or">o con tu correo</p>`:"";
+  const seg=(c)=>`<div class="cats seg" role="tablist" aria-label="Entrar o crear cuenta">
+      <button type="button" role="tab" aria-selected="${!c}" aria-pressed="${!c}" data-paso="entrar">Entrar</button>
+      <button type="button" role="tab" aria-selected="${c}" aria-pressed="${c}" data-paso="crear">Crear cuenta</button></div>`;
+  const back=`<button type="button" class="ghost" data-paso="entrar">‹ Volver</button>`;
+  if(paso==="entrar"){
+    B.innerHTML=`${social}${seg(false)}<form id="fAuth" novalidate>
+      <label>Correo<input id="aMail" name="email" type="email" autocomplete="email" spellcheck="false" placeholder="tucorreo@ejemplo.com" value="${mailVal}"></label>
+      ${pwField("aPass","Contraseña","current-password","Tu contraseña")}
+      <button class="primary" type="submit">Entrar</button></form>
+      <div class="auth-links"><button type="button" class="ghost" data-paso="olvide">¿Olvidaste tu contraseña?</button><button type="button" class="ghost" data-paso="codigo-pedir">Entrar con un código</button></div>`;
+    $("#fAuth").onsubmit=async e=>{e.preventDefault();const email=$("#aMail").value.trim().toLowerCase(),password=$("#aPass").value;authEmail=email;
+      if(!MAIL_RE.test(email)){authMsg("Escribe un correo válido, por ejemplo nombre@gmail.com.");$("#aMail").focus();return}
+      if(!password){authMsg("Escribe tu contraseña.");$("#aPass").focus();return}
+      const done=busy(e.submitter||$("#fAuth .primary"),"Entrando…");
+      const {error}=await sb.auth.signInWithPassword({email,password});done();
+      if(error){if(/not confirmed/i.test(error.message||"")){await sb.auth.resend({type:"signup",email});renderAuth("verificar",email);authMsg(authErr(error));return}authMsg(authErr(error))}};
+  }else if(paso==="crear"){
+    B.innerHTML=`${social}${seg(true)}<form id="fAuth" novalidate>
+      <label>Tu nombre<input id="aName" name="name" autocomplete="given-name" placeholder="Cómo quieres que te salude Luca"></label>
+      <label>Correo<input id="aMail" name="email" type="email" autocomplete="email" spellcheck="false" placeholder="tucorreo@ejemplo.com" value="${mailVal}"></label>
+      ${pwField("aPass","Contraseña","new-password","Mínimo 8 caracteres")}
+      <div class="pw-meter" aria-hidden="true"><i></i></div>
+      <button class="primary" type="submit">Crear mi cuenta</button></form>`;
+    $("#aPass").addEventListener("input",e=>{const v=e.target.value;let s=0;if(v.length>=8)s++;if(v.length>=12)s++;if(/[A-Z]/.test(v)&&/[a-z]/.test(v))s++;if(/\d/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;
+      const m=$(".pw-meter i");m.style.width=Math.min(100,s*20)+"%";m.dataset.s=s<=1?"low":s<=3?"mid":"high"});
+    $("#fAuth").onsubmit=async e=>{e.preventDefault();const nombre=$("#aName").value.trim(),email=$("#aMail").value.trim().toLowerCase(),password=$("#aPass").value;authEmail=email;
+      if(!MAIL_RE.test(email)){authMsg("Escribe un correo válido, por ejemplo nombre@gmail.com.");$("#aMail").focus();return}
+      if(password.length<8){authMsg("La contraseña debe tener al menos 8 caracteres.");$("#aPass").focus();return}
+      const done=busy(e.submitter||$("#fAuth .primary"),"Creando cuenta…");
+      const {data,error}=await sb.auth.signUp({email,password,options:{data:{nombre},emailRedirectTo:redirectURL()}});done();
+      if(error){authMsg(authErr(error));return}
+      if(data&&data.user&&Array.isArray(data.user.identities)&&!data.user.identities.length){authMsg("Ese correo ya tiene cuenta. Entra con tu contraseña o con un código.");return}
+      if(!data||!data.session)renderAuth("verificar",email)};
+  }else if(paso==="verificar"||paso==="codigo"){
+    const verif=paso==="verificar";
+    B.innerHTML=`<form id="fAuth" novalidate>
+      <p>${verif?"Para confirmar tu cuenta":"Para entrar"}, escribe el código que enviamos a <b>${mailVal}</b>. Revisa también la carpeta de spam. Si el correo trae un enlace, también puedes tocarlo en este mismo dispositivo.</p>
+      ${codeField()}<button class="primary" type="submit">${verif?"Confirmar y entrar":"Entrar"}</button></form>
+      <div class="auth-links"><button type="button" class="ghost" id="aResend">Reenviar código</button>${back}</div>`;
+    setTimeout(()=>$("#aCode")&&$("#aCode").focus(),60);
+    startResend(()=>verif?sb.auth.resend({type:"signup",email:authEmail}):sb.auth.signInWithOtp({email:authEmail,options:{shouldCreateUser:false,emailRedirectTo:redirectURL()}}));
+    $("#fAuth").onsubmit=async e=>{e.preventDefault();const token=$("#aCode").value.replace(/\D/g,"");
+      if(token.length<6){authMsg("Escribe el código completo que te llegó al correo.");$("#aCode").focus();return}
+      const done=busy(e.submitter||$("#fAuth .primary"),"Verificando…");
+      let r=await sb.auth.verifyOtp({email:authEmail,token,type:"email"});
+      if(r.error&&verif)r=await sb.auth.verifyOtp({email:authEmail,token,type:"signup"});
+      done();if(r.error){authMsg(authErr(r.error));$("#aCode").select()}};
+  }else if(paso==="codigo-pedir"||paso==="olvide"){
+    const olv=paso==="olvide";
+    B.innerHTML=`<form id="fAuth" novalidate>
+      <p>${olv?"Te enviamos un código para crear una contraseña nueva.":"Te enviamos un código para entrar sin contraseña."}</p>
+      <label>Correo de tu cuenta<input id="aMail" name="email" type="email" autocomplete="email" spellcheck="false" placeholder="tucorreo@ejemplo.com" value="${mailVal}"></label>
+      <button class="primary" type="submit">Enviarme el código</button></form><div class="auth-links">${back}</div>`;
+    $("#fAuth").onsubmit=async e=>{e.preventDefault();const email=$("#aMail").value.trim().toLowerCase();authEmail=email;
+      if(!MAIL_RE.test(email)){authMsg("Escribe un correo válido, por ejemplo nombre@gmail.com.");$("#aMail").focus();return}
+      const done=busy(e.submitter||$("#fAuth .primary"),"Enviando…");
+      const {error}=olv?await sb.auth.resetPasswordForEmail(email,{redirectTo:redirectURL()}):await sb.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:redirectURL()}});
+      done();
+      if(error&&/not found|signups? not allowed|user/i.test(error.message||"")&&!olv){authMsg("No encontramos una cuenta con ese correo. Revisa el correo o crea una cuenta.");return}
+      if(error){authMsg(authErr(error));return}
+      renderAuth(olv?"recuperar":"codigo",email)};
+  }else if(paso==="recuperar"){
+    B.innerHTML=`<form id="fAuth" novalidate>
+      <p>Escribe el código que enviamos a <b>${mailVal}</b> y tu contraseña nueva.</p>
+      ${codeField()}${pwField("aPass","Contraseña nueva","new-password","Mínimo 8 caracteres")}
+      <button class="primary" type="submit">Guardar y entrar</button></form>
+      <div class="auth-links"><button type="button" class="ghost" id="aResend">Reenviar código</button>${back}</div>`;
+    setTimeout(()=>$("#aCode")&&$("#aCode").focus(),60);
+    startResend(()=>sb.auth.resetPasswordForEmail(authEmail,{redirectTo:redirectURL()}));
+    $("#fAuth").onsubmit=async e=>{e.preventDefault();const token=$("#aCode").value.replace(/\D/g,""),password=$("#aPass").value;
+      if(token.length<6){authMsg("Escribe el código completo que te llegó al correo.");$("#aCode").focus();return}
+      if(password.length<8){authMsg("La contraseña nueva debe tener al menos 8 caracteres.");$("#aPass").focus();return}
+      const done=busy(e.submitter||$("#fAuth .primary"),"Guardando…");
+      recoveryInForm=true;const v=await sb.auth.verifyOtp({email:authEmail,token,type:"recovery"});
+      if(v.error){recoveryInForm=false;done();authMsg(authErr(v.error));return}
+      const u=await sb.auth.updateUser({password});done();recoveryInForm=false;pendingRecovery=false;
+      if(u.error){toast(authErr(u.error));nuevaClaveSheet();return}
+      toast("Contraseña actualizada")};
+  }
   const oauth=async prov=>{authMsg("");const {error}=await sb.auth.signInWithOAuth({provider:prov,options:{redirectTo:redirectURL()}});if(error)authMsg("No se pudo abrir el inicio de sesión. Inténtalo de nuevo.")};
   $("#aGoogle")&&($("#aGoogle").onclick=()=>oauth("google"));
   $("#aApple")&&($("#aApple").onclick=()=>oauth("apple"));
-  $("#tEntrar").onclick=()=>renderAuth("entrar");
-  $("#tCrear").onclick=()=>renderAuth("crear");
-  $("#fPass").onsubmit=async e=>{e.preventDefault();
-    const email=$("#aMail").value.trim().toLowerCase(),password=$("#aPass").value;
-    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){authMsg("Escribe un correo válido, por ejemplo nombre@gmail.com.");$("#aMail").focus();return}
-    if(password.length<6){authMsg("La contraseña debe tener al menos 6 caracteres.");$("#aPass").focus();return}
-    const b=e.submitter||$("#fPass button.primary"),txt=b.textContent;b.disabled=true;b.textContent=crear?"Creando cuenta…":"Entrando…";
-    const {data,error}=crear?await sb.auth.signUp({email,password}):await sb.auth.signInWithPassword({email,password});
-    b.disabled=false;b.textContent=txt;
-    if(error){const m=error.message||"";
-      authMsg(/already|registered|exists/i.test(m)?"Ese correo ya tiene cuenta. Toca “Ya tengo cuenta” y entra con tu contraseña."
-        :/invalid login|credentials/i.test(m)?"El correo o la contraseña no coinciden. Revísalos o crea una cuenta nueva."
-        :/rate|seconds|limit/i.test(m)?"Muchos intentos seguidos. Espera un minuto y vuelve a intentarlo."
-        :/password/i.test(m)?"Esa contraseña no sirve: usa al menos 6 caracteres."
-        :"No se pudo entrar. Revisa tu conexión e inténtalo de nuevo.");return}
-    if(crear&&data&&!data.session)authMsg("Cuenta creada. Revisa tu correo para confirmarla y luego entra.");
-  };
+  B.querySelectorAll("[data-paso]").forEach(b=>b.onclick=()=>{const m=$("#aMail");renderAuth(b.dataset.paso,m?m.value.trim().toLowerCase():authEmail)});
+  B.querySelectorAll("[data-eye]").forEach(b=>b.onclick=()=>{const i=$("#"+b.dataset.eye);const show=i.type==="password";i.type=show?"text":"password";b.textContent=show?"Ocultar":"Ver";b.setAttribute("aria-label",show?"Ocultar contraseña":"Mostrar contraseña")});
+}
+function nuevaClaveSheet(titulo){
+  openSheet(titulo||"Crea tu contraseña nueva",`<form id="fNP" class="stack" novalidate>
+    ${pwField("npPass","Contraseña nueva","new-password","Mínimo 8 caracteres")}
+    <p class="hint" id="npMsg"></p><button class="primary" type="submit">Guardar contraseña</button></form>`,()=>{
+    $("#sheetBody [data-eye]").onclick=e=>{const i=$("#npPass");const s=i.type==="password";i.type=s?"text":"password";e.target.textContent=s?"Ocultar":"Ver"};
+    $("#fNP").onsubmit=async e=>{e.preventDefault();const p=$("#npPass").value;if(p.length<8){$("#npMsg").textContent="Usa al menos 8 caracteres.";return}
+      const done=busy(e.submitter||$("#fNP .primary"),"Guardando…");const {error}=await sb.auth.updateUser({password:p});done();
+      if(error){$("#npMsg").textContent=authErr(error);return}closeSheet();toast("Contraseña guardada")};
+  });
 }
 function pantalla(cual){$("#boot").hidden=cual!=="boot";$("#auth").hidden=cual!=="auth";$("#app").hidden=cual!=="app";$("#fab").hidden=cual!=="app"}
 function showAuth(){pantalla("auth");renderAuth("entrar")}
 async function start(u){
-  if(user&&user.id===u.id)return;
+  if(user&&user.id===u.id){user=u;return}
   user=u;perfil={plan:"free",plan_until:null};emptyState();cacheLoad();
   pantalla("app");render();go("resumen");setSync("Conectando…");
-  if(/[?&]code=|access_token|error_description/.test(location.search+location.hash))history.replaceState(null,"",location.pathname);
-  try{await loadAll();setSync("Sincronizado")}catch(e){setSync("Sin conexión");toast("No se pudieron cargar tus datos. Revisa tu conexión.")}
+  if(/[?&]code=|access_token|error_description|type=recovery/.test(location.search+location.hash))history.replaceState(null,"",location.pathname);
+  let ok=false;
+  try{await loadAll();ok=true;setSync(navigator.onLine===false?"Sin conexión":"Sincronizado")}catch(e){setSync("Sin conexión");toast("No se pudieron cargar tus datos. Revisa tu conexión.")}
   loadPerfil().then(render).catch(()=>{});
   subscribe();actualizarTRM();
+  if(pendingRecovery){pendingRecovery=false;nuevaClaveSheet()}
+  else if(ok)maybeOnboard();
 }
 function stop(){if(canal&&sb)sb.removeChannel(canal);canal=null;user=null;emptyState();closeSheet();showAuth()}
 async function init(){
@@ -227,10 +294,14 @@ async function init(){
   if(!window.supabase||!C.SUPABASE_URL||/TU-PROYECTO/.test(C.SUPABASE_URL)){
     pantalla("auth");$("#authBody").innerHTML='<div class="notice">Falta conectar la base de datos. Abre <b>config.js</b> y pega la URL y la clave pública de tu proyecto de Supabase (la guía está en README.md).</div>';return}
   sb=window.supabase.createClient(C.SUPABASE_URL,C.SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"implicit"}});
-  sb.auth.onAuthStateChange((ev,session)=>{const u=session&&session.user;if(u)start(u);else if(user)stop()});
+  sb.auth.onAuthStateChange((ev,session)=>{
+    if(ev==="PASSWORD_RECOVERY"&&!recoveryInForm){if(user)setTimeout(()=>nuevaClaveSheet(),50);else pendingRecovery=true}
+    const u=session&&session.user;if(u)start(u);else if(user)stop()});
   const {data}=await sb.auth.getSession();
   if(data&&data.session&&data.session.user)start(data.session.user);else if(!user)showAuth();
 }
+addEventListener("online",()=>{if(user){setSync("Sincronizado");loadAll().catch(()=>{})}});
+addEventListener("offline",()=>{if(user){setSync("Sin conexión");toast("Estás sin internet. Lo que veas puede no estar al día.")}});
 
 /* ---------- Fechas ---------- */
 const onDay=(y,m,day)=>{const last=new Date(y,m+1,0).getDate();return new Date(y,m,Math.min(day,last))};
@@ -292,9 +363,9 @@ function antesDe(limit){
 
 /* ---------- Render ---------- */
 function render(){
-  const d=new Date();$("#monthLabel").textContent=MESES[d.getMonth()]+" "+d.getFullYear();
+  const d=new Date();const nom=user?nombreUsuario():"";$("#monthLabel").textContent=(nom?"Hola, "+nom+" · ":"")+MESES[d.getMonth()]+" "+d.getFullYear();
   const T=totals(),a=S.ajustes;
-  renderResumen(T,a);renderAgenda();renderTarjetas();renderMovs();renderMas(a);renderCuenta();
+  renderResumen(T,a);renderAgenda();renderTarjetas();renderMovs();renderMas(a);renderCuenta();renderPlan();
 }
 function renderResumen(T,a){
   let disp=null;
@@ -802,4 +873,149 @@ $("#fCat").onsubmit=async e=>{e.preventDefault();const n=$("#catNom").value.trim
   S.ajustes.categorias=[...cats(),n];$("#catNom").value="";await saveAjustes();toast("Categoría agregada")};
 document.querySelectorAll("#app input").forEach(i=>i.setAttribute("autocomplete","off"));
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(f)leerRespaldo(f);e.target.value=""});
+/* ---------- Tu cuenta ---------- */
+const APP_VERSION="1.1.0";
+const REPO_URL="https://github.com/Andresr-7/luca";
+function nombreUsuario(){
+  const md=(user&&user.user_metadata)||{};
+  const n=(S.ajustes&&S.ajustes.nombre)||md.nombre||md.full_name||md.name||"";
+  return String(n).trim().split(/\s+/)[0]||"";
+}
+const PROV_TXT={google:"Google",apple:"Apple",email:"correo y contraseña"};
+function renderCuenta(){
+  const el=$("#cuentaPanel");if(!el||!user)return;
+  const prov=(user.app_metadata&&user.app_metadata.provider)||"email";
+  const nom=nombreUsuario();const ini=(nom||user.email||"?").charAt(0).toUpperCase();
+  const fila=(id,txt,extra)=>`<button type="button" class="item row-btn${extra||""}" id="${id}"><span class="main">${txt}</span><span class="chev" aria-hidden="true">›</span></button>`;
+  const html=`<div class="me"><span class="avatar" aria-hidden="true">${esc(ini)}</span><div style="min-width:0;flex:1">
+      <div class="me-name">${esc(nom||"Tu cuenta")}</div><div class="hint" style="overflow-wrap:anywhere">${esc(user.email||"")}</div>
+      <div class="hint">Entraste con ${esc(PROV_TXT[prov]||prov)}</div></div>
+      <span class="chip ${isPro()?"in":""}">${isPro()?"Pro":"Gratis"}</span></div>
+    ${CONFIG.PAGOS&&CONFIG.PAGOS.activo&&!isPro()?'<button class="primary" id="cPro">Mejorar a Pro</button>':""}
+    <div class="list">
+      ${fila("cName","Cambiar mi nombre")}
+      ${fila("cPass",prov==="email"?"Cambiar contraseña":"Crear una contraseña")}
+      ${fila("cCsv","Exportar movimientos a Excel")}
+      ${fila("cExport","Descargar respaldo completo")}
+      ${fila("cImport","Importar respaldo")}
+      ${fila("cOut","Cerrar sesión")}
+    </div>
+    <button class="danger" id="cDel">Eliminar mi cuenta y mis datos</button>`;
+  if(el.dataset.h===html)return;el.dataset.h=html;el.innerHTML=html;
+  $("#cPro")&&($("#cPro").onclick=irAPagar);
+  $("#cName").onclick=()=>nombreSheet();
+  $("#cPass").onclick=()=>nuevaClaveSheet(prov==="email"?"Cambiar contraseña":"Crear una contraseña");
+  $("#cCsv").onclick=exportarCSV;
+  $("#cExport").onclick=exportar;
+  $("#cImport").onclick=()=>$("#fileImport").click();
+  $("#cOut").onclick=async()=>{await sb.auth.signOut();stop()};
+  confirmBtn($("#cDel"),async()=>{
+    const {error}=await sb.rpc("delete_my_account");
+    if(error){toast("No se pudo eliminar la cuenta. Inténtalo de nuevo.");return}
+    try{localStorage.removeItem(cacheKey())}catch(e){}
+    await sb.auth.signOut();stop();toast("Tu cuenta y tus datos fueron eliminados");
+  },"Toca otra vez: se borra todo y no se puede deshacer");
+}
+function nombreSheet(){
+  openSheet("Tu nombre",`<form id="fNom" class="stack" novalidate>
+    <label>¿Cómo quieres que te salude Luca?<input id="nNom" name="nombre" autocomplete="given-name" value="${esc(nombreUsuario())}" placeholder="Tu nombre"></label>
+    <button class="primary" type="submit">Guardar</button></form>`,()=>{
+    $("#fNom").onsubmit=async e=>{e.preventDefault();S.ajustes.nombre=$("#nNom").value.trim();closeSheet();await saveAjustes();renderCuenta();toast("Nombre guardado")};
+  });
+}
+
+/* ---------- Exportar a Excel (CSV con ; para Excel en español) ---------- */
+function exportarCSV(){
+  const q=v=>{const s=String(v??"");return /[;"\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
+  const rows=[["tipo","fecha","descripcion","categoria","medio_o_cuenta","valor_cop","valor_usd"]];
+  S.gastos.forEach(g=>rows.push(["gasto",g.fecha,g.nota||g.categoria,g.categoria,g.medio||"",-(g.valor||0),g.valorUsd!=null?-g.valorUsd:""]));
+  S.ingresos.forEach(i=>rows.push(["ingreso",i.fecha,i.nota||"Ingreso","",i.cuenta||"",i.valor||0,""]));
+  S.pagos.forEach(p=>rows.push(["pago_tarjeta",p.fecha,"Pago "+(p.tarjeta||""),"",p.tarjeta||"",-(p.valor||0),p.valorUsd!=null?-p.valorUsd:""]));
+  S.movcuentas.filter(m=>["entrada","salida","transferencia","ajuste"].includes(m.tipo)).forEach(m=>rows.push(["cuenta_"+m.tipo,m.fecha,m.nota||"",""
+    ,m.cuenta||"",m.valor||0,""]));
+  const body=[rows[0],...rows.slice(1).sort((a,b)=>String(b[1]).localeCompare(String(a[1])))].map(r=>r.map(q).join(";")).join("\r\n");
+  const blob=new Blob(["﻿"+body],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="luca-movimientos-"+today()+".csv";
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},800);
+  toast("Exportados "+(rows.length-1)+" movimientos");
+}
+
+/* ---------- Apariencia (por dispositivo) ---------- */
+function temaGuardado(){try{return localStorage.getItem("luca-tema")||"auto"}catch(e){return "auto"}}
+function aplicarTema(t){
+  const r=document.documentElement;if(t==="light"||t==="dark")r.dataset.theme=t;else delete r.dataset.theme;
+  try{localStorage.setItem("luca-tema",t)}catch(e){}
+  const dark=t==="dark"||(t==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute("content",dark?"#000000":"#F5F5F7"));
+  document.querySelectorAll("#temaSeg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.tema===t));
+}
+aplicarTema(temaGuardado());
+$("#temaSeg").addEventListener("click",e=>{const b=e.target.closest("button[data-tema]");if(b)aplicarTema(b.dataset.tema)});
+
+/* ---------- Plan ---------- */
+function renderPlan(){
+  const el=$("#planPanel");if(!el)return;
+  const pro=isPro();
+  const html=`<div class="row-head"><div><div class="me-name">${pro?"Luca Pro":"Luca Gratis"}</div>
+      <div class="hint">${pro?(perfil.plan_until?"Activo hasta el "+fechaCorta(String(perfil.plan_until).slice(0,10)):"Activo"):"Todo incluido mientras Luca está en lanzamiento."}</div></div>
+      <span class="chip ${pro?"in":""}">${pro?"Activo":"Tu plan"}</span></div>
+    <ul class="checks"><li>Tarjetas en pesos y dólares, sin límite</li><li>Quincena, agenda y presupuestos</li><li>Cuentas de ahorro y metas</li><li>Sincronización entre celular y computador</li><li>Exportar a Excel y respaldos</li></ul>
+    ${pro?"":`<p class="hint">Luca Pro llega pronto. Te avisaremos antes de que cambie algo, y lo que ya tienes seguirá siendo gratis.</p>`}
+    ${CONFIG.PAGOS&&CONFIG.PAGOS.activo&&!pro?'<button class="primary" id="plPro">Mejorar a Pro</button>':""}`;
+  if(el.dataset.h===html)return;el.dataset.h=html;el.innerHTML=html;
+  $("#plPro")&&($("#plPro").onclick=irAPagar);
+}
+
+/* ---------- Ayuda y acerca de ---------- */
+(()=>{const el=$("#ayudaPanel");if(!el)return;
+  const link=(href,txt,ext)=>`<a class="item row-btn" href="${href}"${ext?' target="_blank" rel="noopener"':""}><span class="main">${txt}</span><span class="chev" aria-hidden="true">›</span></a>`;
+  el.innerHTML=`<div class="list">
+    ${link(REPO_URL+"/issues/new","Reportar un problema o sugerir algo",true)}
+    ${link("privacidad.html","Política de privacidad")}
+    ${link("terminos.html","Términos de uso")}
+    <div class="item"><span class="main">Versión</span><span class="amt muted">${APP_VERSION}</span></div></div>
+    <p class="hint">Luca no se conecta a tu banco ni pide claves bancarias. Tú escribes tus datos y solo tú los ves.</p>`;
+})();
+
+/* ---------- Bienvenida para cuentas nuevas ---------- */
+function maybeOnboard(){
+  const a=S.ajustes;if(a.onboarded)return;
+  const tieneDatos=S.tarjetas.length||S.gastos.length||S.cuentas.length||a.montoPago;
+  if(tieneDatos){a.onboarded=true;saveAjustes();return}
+  let paso=1;const datos={nombre:nombreUsuario(),monto:null,dias:(a.diasPago||[15,30]).join(", ")};
+  const pintar=()=>{
+    const dots=`<div class="steps" aria-label="Paso ${paso} de 3">${[1,2,3].map(i=>`<i class="${i<=paso?"on":""}"></i>`).join("")}</div>`;
+    if(paso===1){
+      $("#sheetTitle").textContent="Bienvenido a Luca";
+      $("#sheetBody").innerHTML=`${dots}<form id="ob" class="stack" novalidate><p>Luca te ayuda a saber cuánto debes, cuándo pagar y en qué se va tu plata. Configurarlo toma un minuto.</p>
+        <label>¿Cómo te llamas?<input id="obNom" autocomplete="given-name" value="${esc(datos.nombre)}" placeholder="Tu nombre"></label>
+        <button class="primary" type="submit">Siguiente</button></form>`;
+      $("#ob").onsubmit=e=>{e.preventDefault();datos.nombre=$("#obNom").value.trim();paso=2;pintar()};
+    }else if(paso===2){
+      $("#sheetTitle").textContent="Tu sueldo";
+      $("#sheetBody").innerHTML=`${dots}<form id="ob" class="stack" novalidate><p>Con esto Luca calcula cuánto te queda cada mes y cuándo te llega la plata.</p>
+        <label>¿Cuánto te llega cada pago?<input id="obMonto" class="money num" inputmode="numeric" placeholder="$ 0" value="${datos.monto?fmt(datos.monto):""}"></label>
+        <label>¿Qué días del mes te pagan?<input id="obDias" inputmode="numeric" placeholder="Ej. 15, 30…" value="${esc(datos.dias)}"><span class="hint">Sepáralos con coma. Si te pagan una vez al mes, pon un solo día.</span></label>
+        <button class="primary" type="submit">Siguiente</button><button type="button" class="ghost" id="obSkip">Lo hago después</button></form>`;
+      liveMoney($("#obMonto"));
+      const next=async guardar=>{if(guardar){datos.monto=parse($("#obMonto").value);datos.dias=$("#obDias").value}
+        const dias=[...new Set(String(datos.dias).split(/[^\d]+/).map(n=>parseInt(n,10)).filter(n=>n>=1&&n<=31))].sort((x,y)=>x-y);
+        S.ajustes.nombre=datos.nombre||S.ajustes.nombre||"";if(guardar&&datos.monto)S.ajustes.montoPago=datos.monto;if(guardar&&dias.length)S.ajustes.diasPago=dias;
+        S.ajustes.onboarded=true;await saveAjustes();paso=3;pintar()};
+      $("#ob").onsubmit=e=>{e.preventDefault();next(true)};$("#obSkip").onclick=()=>next(false);
+    }else{
+      $("#sheetTitle").textContent=datos.nombre?"Listo, "+datos.nombre:"Listo";
+      $("#sheetBody").innerHTML=`${dots}<div class="stack"><p>Ahora agrega lo primero que quieras controlar. Puedes cambiar todo después en la pestaña Más.</p>
+        <button class="primary" id="obCard">Agregar mi primera tarjeta</button>
+        <button id="obAcct">Agregar una cuenta de ahorro</button>
+        <button class="ghost" id="obFin">Explorar la app</button></div>`;
+      $("#obCard").onclick=()=>{closeSheet();cardSheet(null)};
+      $("#obAcct").onclick=()=>{closeSheet();acctSheet(null)};
+      $("#obFin").onclick=()=>{closeSheet();toast("Toca + Gasto cuando gastes algo")};
+    }
+    const f=$("#sheetBody input");f&&setTimeout(()=>f.focus(),60);
+  };
+  $("#sheetBack").hidden=false;pintar();
+}
+
 init();

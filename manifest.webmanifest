@@ -3,6 +3,7 @@
   "short_name": "Luca",
   "description": "Tus tarjetas, tu quincena y tus gastos en un solo lugar.",
   "lang": "es-CO",
+  "id": "/luca/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

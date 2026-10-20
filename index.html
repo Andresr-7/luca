@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div id="boot" class="bootscreen">Cargando…</div>
+<div id="boot" class="bootscreen" role="status" aria-label="Cargando Luca"><span class="brand-mark boot-mark" aria-hidden="true"><svg viewBox="0 0 100 100"><path d="M33 24V72H73" fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/><circle cx="59" cy="50.5" r="12.5" fill="currentColor"/><circle cx="59" cy="50.5" r="8.2" fill="none" style="stroke:var(--primary)" stroke-width="2.4"/></svg></span></div>
 
 <div class="wrap auth" id="auth" hidden>
   <div class="auth-card">
@@ -29,7 +29,7 @@
     <p class="lead">Tarjetas en pesos y dólares, tu quincena, tus cuentas de ahorro y en qué se va cada peso. En el celular y en el computador.</p>
     <div id="authBody"></div>
     <p class="auth-msg" id="authMsg" role="alert" hidden></p>
-    <p class="auth-foot">Al entrar aceptas la <a href="privacidad.html">política de privacidad</a>. Tus datos solo los ves tú.</p>
+    <p class="auth-foot">Al usar Luca aceptas los <a href="terminos.html">términos de uso</a> y la <a href="privacidad.html">política de privacidad</a>. Luca no se conecta a tu banco: tus datos solo los ves tú.</p>
   </div>
 </div>
 
@@ -131,6 +131,21 @@
       <input type="file" id="fileImport" accept="application/json,.json" hidden>
     </section>
     <section class="block">
+      <h2>Tu plan</h2>
+      <div class="panel" id="planPanel"></div>
+    </section>
+    <section class="block">
+      <h2>Apariencia</h2>
+      <div class="panel">
+        <div class="cats seg" id="temaSeg" role="group" aria-label="Apariencia">
+          <button type="button" data-tema="auto" aria-pressed="true">Automático</button>
+          <button type="button" data-tema="light" aria-pressed="false">Claro</button>
+          <button type="button" data-tema="dark" aria-pressed="false">Oscuro</button>
+        </div>
+        <p class="hint">Automático sigue el modo claro u oscuro de tu celular. Se guarda en este dispositivo.</p>
+      </div>
+    </section>
+    <section class="block">
       <h2>Tu sueldo</h2>
       <form id="fIngreso" class="panel">
         <label>Cuánto te llega cada pago (aprox.)<input id="ingValor" name="ingValor" class="money num" inputmode="numeric" placeholder="$ 0"></label>
@@ -171,6 +186,10 @@
     <section class="block">
       <div class="row-head"><h2>Metas de ahorro</h2><button class="ghost" id="addMeta">+ Nueva meta</button></div>
       <div id="metasList" class="stack"></div>
+    </section>
+    <section class="block">
+      <h2>Ayuda y acerca de</h2>
+      <div id="ayudaPanel" class="stack"></div>
     </section>
   </main>
 </div>
