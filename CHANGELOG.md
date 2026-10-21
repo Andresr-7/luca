@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.5.0 — 2026-10-21
+- Luca glass theme across the whole app, in light and dark: slowly drifting blue, indigo and lime aurora behind frosted translucent cards, sheets and bars; blue-to-indigo hero with a lime glow; Luca blue as the primary color.
+
 ## 2.4.2 — 2026-10-21
 - Sign-in with a code now waits for the verification animation: cards fan out while the seal laps the edge (at least 1.3 s), then the slots turn green with a "Verified ✓" state, and only then the app opens.
 

@@ -786,3 +786,48 @@ body:has(#auth:not([hidden])){background:#04060E}
 #auth .brand-mark{box-shadow:0 10px 40px rgba(47,107,255,.5)}
 .auth-bg .grid-floor{height:65%;background-image:linear-gradient(rgba(110,149,255,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(110,149,255,.35) 1px,transparent 1px)}
 #auth .auth-card{background:linear-gradient(160deg,rgba(22,30,58,.42),rgba(6,9,20,.6))}
+
+/* ---------- v2.5: cristal Luca en toda la app (claro y oscuro) ---------- */
+:root{
+  --canvas:#EEF2FF; --surface:rgba(255,255,255,.62); --surface-2:rgba(255,255,255,.5); --fill:rgba(47,107,255,.08); --fill-2:rgba(47,107,255,.06);
+  --primary:#2F6BFF; --primary-pale:rgba(47,107,255,.12); --accent-ink:#2456E6; --bar:#2F6BFF; --hero-cta:#2F6BFF;
+  --lime:#C6F432; --lime-ink:#4D6B00; --chrome:rgba(246,248,255,.62);
+  --glass-line:rgba(255,255,255,.75); --glass-shadow:0 8px 30px rgba(47,70,160,.10),inset 0 1px 0 rgba(255,255,255,.8);
+  --hero:linear-gradient(140deg,#2F6BFF 0%,#3A1FE0 70%,#2a14a8 100%); --hero-ink:#EEF2FF; --hero-num:#FFFFFF;
+  --aurora:radial-gradient(60vmax 50vmax at 0% 0%,rgba(47,107,255,.28),transparent 60%),radial-gradient(50vmax 45vmax at 100% 30%,rgba(58,31,224,.18),transparent 60%),radial-gradient(45vmax 40vmax at 30% 100%,rgba(198,244,50,.22),transparent 60%);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --canvas:#04060E; --surface:rgba(22,30,58,.46); --surface-2:rgba(44,56,98,.40); --fill:rgba(110,149,255,.12); --fill-2:rgba(110,149,255,.08);
+  --primary:#4C7DFF; --primary-pale:rgba(110,149,255,.18); --accent-ink:#8FB4FF; --bar:#6E95FF; --hero-cta:#C6F432; --hero-cta-ink:#0A0F1F;
+  --lime-ink:#C6F432; --chrome:rgba(8,12,28,.62); --line:rgba(110,149,255,.16);
+  --glass-line:rgba(110,149,255,.16); --glass-shadow:0 10px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06);
+  --hero:linear-gradient(140deg,rgba(47,107,255,.55),rgba(58,31,224,.45) 70%,rgba(20,12,80,.5));
+  --aurora:radial-gradient(60vmax 50vmax at 0% 0%,rgba(47,107,255,.35),transparent 60%),radial-gradient(50vmax 45vmax at 100% 30%,rgba(58,31,224,.30),transparent 60%),radial-gradient(45vmax 40vmax at 30% 100%,rgba(198,244,50,.12),transparent 60%);
+}}
+:root[data-theme="dark"]{
+  --canvas:#04060E; --surface:rgba(22,30,58,.46); --surface-2:rgba(44,56,98,.40); --fill:rgba(110,149,255,.12); --fill-2:rgba(110,149,255,.08);
+  --primary:#4C7DFF; --primary-pale:rgba(110,149,255,.18); --accent-ink:#8FB4FF; --bar:#6E95FF; --hero-cta:#C6F432; --hero-cta-ink:#0A0F1F;
+  --lime-ink:#C6F432; --chrome:rgba(8,12,28,.62); --line:rgba(110,149,255,.16);
+  --glass-line:rgba(110,149,255,.16); --glass-shadow:0 10px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06);
+  --hero:linear-gradient(140deg,rgba(47,107,255,.55),rgba(58,31,224,.45) 70%,rgba(20,12,80,.5));
+  --aurora:radial-gradient(60vmax 50vmax at 0% 0%,rgba(47,107,255,.35),transparent 60%),radial-gradient(50vmax 45vmax at 100% 30%,rgba(58,31,224,.30),transparent 60%),radial-gradient(45vmax 40vmax at 30% 100%,rgba(198,244,50,.12),transparent 60%);
+}
+body{background:var(--canvas)}
+body::before{content:"";position:fixed;inset:-10vmax;z-index:-2;pointer-events:none;background:var(--aurora)}
+@media (prefers-reduced-motion:no-preference){body::before{animation:auroraDrift 24s ease-in-out infinite alternate}}
+@keyframes auroraDrift{to{transform:translate(4vmax,3vmax) scale(1.06)}}
+/* Cristal */
+.panel,.card,.list,.hero,.libre,.quick,.payoff-card,.cupo-sum,.ios-list.solo,.rings-card,.ins,.pro-promo,.ask-bar,.stat,.payday,.ciclo,.bars,.empty,.celebra-card{
+  -webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow)}
+.list .item,.ios-list .item{border-color:var(--line)}
+.hero{background:var(--hero)!important;color:var(--hero-ink)!important;border-color:rgba(255,255,255,.18)!important;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;width:220px;height:220px;right:-70px;top:-90px;border-radius:50%;background:radial-gradient(circle,rgba(198,244,50,.45),transparent 65%);pointer-events:none}
+.hero>*{position:relative;z-index:1}
+.sheet{background:color-mix(in srgb,var(--canvas) 72%,transparent)!important;-webkit-backdrop-filter:blur(30px) saturate(170%);backdrop-filter:blur(30px) saturate(170%);border-top:1px solid var(--glass-line)}
+.appbar{position:relative}
+#navMini{background:var(--chrome)!important;-webkit-backdrop-filter:blur(20px) saturate(170%);backdrop-filter:blur(20px) saturate(170%)}
+nav.tabs{border-top:1px solid var(--glass-line)}
+.fab{background:linear-gradient(150deg,#2F6BFF,#3A1FE0)!important;box-shadow:0 10px 30px rgba(47,107,255,.45)!important}
+.primary{background:linear-gradient(180deg,color-mix(in srgb,var(--primary) 88%,#fff),var(--primary))}
+.brand-mark{box-shadow:0 6px 20px rgba(47,107,255,.35)}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){:root{--surface:#fff}}
