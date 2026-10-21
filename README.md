@@ -24,7 +24,7 @@ I built Luca to answer that question for my own finances, then turned it into a 
 | <img src="docs/img/summary.jpg" width="260"> | **Free until payday.** One big number: what you can spend per day until your next paycheck, after setting aside every card minimum and fixed bill due before then.<br><br>**Daily rings & streak.** Apple-Activity-style rings for today, the month and card payments, plus a streak of days within budget. |
 | <img src="docs/img/afford.jpg" width="260"> | **"Can I afford it?"** Type a price, get a green / yellow / red answer that considers your pace, upcoming bills and category budget.<br><br>**Type expenses like you talk.** `lunch 18k wallet`, `uber 12.500 nubank yesterday`, `netflix 20 usd amex` — a rule-based parser extracts amount (incl. Colombian slang like *lucas* and *palos*), currency, account/card, date and category. |
 | <img src="docs/img/debt-free.jpg" width="260"> | **Debt-free date.** Amortization simulation per card with its own monthly interest rate; a slider shows how much sooner you finish (and how much interest you save) by paying more.<br><br>**Smart payment plan.** Splits a monthly budget across cards with the *avalanche* or *snowball* strategy and compares it against minimum-only payments. |
-| <img src="docs/img/recap.jpg" width="260"> | **Your month as a story.** An animated, shareable recap: total spent, top category, busiest day, biggest purchase.<br><br>Also: subscription hunter, paycheck splitter, small-leak ("gasto hormiga") insights, payment reminders with an `.ics` calendar export, savings goals, CSV export, privacy mode, dark mode, Spanish/English. |
+| <img src="docs/img/recap.jpg" width="260"> | **Your month as a story.** An animated, shareable recap: total spent, top category, busiest day, biggest purchase.<br><br>Also: **Ask Luca** (a chat that answers questions about your money on-device), fingerprint / Face ID lock (WebAuthn), subscription hunter, paycheck splitter, small-leak ("gasto hormiga") insights, payment reminders with an `.ics` calendar export, savings goals, CSV export, privacy mode, dark mode, Spanish/English. |
 
 ## Tech stack
 
@@ -90,6 +90,7 @@ To use your own backend, create a Supabase project, run `supabase/schema.sql` an
 
 ```
 index.html      app shell and screens          pro.js        rings, insights, payment plan, paycheck split
+                                               asistente.js  Ask Luca chat + biometric lock
 styles.css      iOS-style design system         i18n*.js      translation layer + English dictionary
 app.js          data layer, auth, core screens  sw.js         offline cache and background reminders
 extras.js       free-until-payday, parser,      supabase/     schema, RLS, views, payment webhook

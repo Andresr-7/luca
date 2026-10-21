@@ -59,5 +59,15 @@ const w=(p,ms=300)=>p.waitForTimeout(ms);
   const [dl]=await Promise.all([p.waitForEvent("download"),p.click("#avCal")]);const ics=fs.readFileSync(await dl.path(),"utf8");
   T("ics",ics.includes("BEGIN:VCALENDAR")&&ics.includes("SUMMARY:Pagar Nubank")&&ics.includes("BYMONTHDAY=28,29,30;BYSETPOS=-1"),dl.suggestedFilename()+" "+ics.length+"b");
   
+  // Pregúntale a Luca
+  await p.evaluate(()=>closeSheet&&closeSheet());await w(p,400);
+  const resp=await p.evaluate(()=>["¿Cuánto debo?","¿Cuánto gasté en comida este mes?","¿Cuánto puedo gastar hoy?","¿Cuánto tengo en mis cuentas?","qwerty"].map(q=>String(responder(q)).replace(/<[^>]+>/g,"")));
+  T("asistente responde deuda",/\$/.test(resp[0]),resp[0]);
+  T("asistente categoría",/omida/.test(resp[1]),resp[1]);
+  T("asistente fallback",resp[4].length>10,resp[4]);
+  await p.evaluate(()=>document.querySelector('.ask-bar').click());await w(p,500);
+  await p.fill("#pregIn","¿Cuánto debo?");await p.click("#fPreg button[type=submit]");await w(p,400);
+  T("chat burbujas",(await p.$$(".msg.yo")).length===1&&(await p.$$(".msg.luca")).length>=2);
+  T("panel seguridad",(await p.textContent("#seguridadPanel")).length>5,await p.textContent("#seguridadPanel"));
   T("no JavaScript errors",p.errs.filter(e=>!/fetching the script/.test(e)).length===0,p.errs.join(" | "));H.done();
   await b.close()})();

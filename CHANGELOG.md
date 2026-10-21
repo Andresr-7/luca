@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.0 — 2026-10-21
+- **Pregúntale a Luca**: chat that answers questions about your money ("¿cuánto gasté en comida?", "¿cuánto debo?", "¿cuándo vence…?") computed entirely on the device.
+- **Fingerprint / Face ID lock** (WebAuthn platform authenticator), auto-relock after 60 s in background.
+- New Seguridad section in Más; tests for the assistant.
+
 ## 2.0.0 — 2026-10-21
 - Daily rings and streak, "Luca insights", smart payment plan (avalanche/snowball), paycheck splitter, subscription hunter, privacy mode, Luca Pro screen.
 - iOS-style redesign: large titles, compact translucent nav bar, Wallet-style quick actions, light cards.
