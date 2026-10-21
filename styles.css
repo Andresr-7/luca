@@ -749,3 +749,40 @@ body:has(#auth:not([hidden])){background:#050506}
 #auth .seg button{color:#A1A1AA}
 #auth .seg button[aria-selected="true"]{background:rgba(255,255,255,.14);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
 #auth .auth-links .ghost{font-size:15px}
+
+/* ---------- v2.4.1: entrada con colores Luca y fondo futurista ---------- */
+#auth{--gold:#C6F432;--primary:#6E95FF;--accent-ink:#C6F432;--canvas:#04060E}
+body:has(#auth:not([hidden])){background:#04060E}
+.auth-bg{background:radial-gradient(120% 70% at 50% -10%,#0E1A3D 0%,#04060E 60%);overflow:hidden}
+.auth-bg .aur{position:absolute;border-radius:50%;filter:blur(70px);opacity:.55;mix-blend-mode:screen}
+.auth-bg .a1{width:70vmax;height:70vmax;left:-25vmax;top:-30vmax;background:radial-gradient(circle,#2F6BFF 0%,transparent 65%)}
+.auth-bg .a2{width:60vmax;height:60vmax;right:-25vmax;top:10vh;background:radial-gradient(circle,#3A1FE0 0%,transparent 65%)}
+.auth-bg .a3{width:45vmax;height:45vmax;left:10vw;bottom:-25vmax;background:radial-gradient(circle,#C6F432 0%,transparent 60%);opacity:.28}
+.auth-bg .grid-floor{position:absolute;left:-50%;right:-50%;bottom:-10%;height:55%;transform:perspective(420px) rotateX(62deg);transform-origin:50% 100%;
+  background-image:linear-gradient(rgba(110,149,255,.22) 1px,transparent 1px),linear-gradient(90deg,rgba(110,149,255,.22) 1px,transparent 1px);background-size:56px 56px;
+  -webkit-mask:linear-gradient(to top,#000 10%,transparent 85%);mask:linear-gradient(to top,#000 10%,transparent 85%)}
+.auth-bg .beams{position:absolute;inset:0;width:100%;height:100%}
+.auth-bg .bm{fill:none;stroke-width:2.2;stroke-linecap:round;stroke-dasharray:420 900;filter:drop-shadow(0 0 6px rgba(110,149,255,.9))}
+.auth-bg .b2{stroke-width:1.6}.auth-bg .b3{stroke-width:1.4;opacity:.7}
+@media (prefers-reduced-motion:no-preference){
+  .auth-bg .a1{animation:aur1 16s ease-in-out infinite alternate}.auth-bg .a2{animation:aur2 20s ease-in-out infinite alternate}.auth-bg .a3{animation:aur3 18s ease-in-out infinite alternate}
+  .auth-bg .grid-floor{animation:gridMove 3.5s linear infinite}
+  .auth-bg .bm{animation:beam 7s linear infinite}.auth-bg .b2{animation-duration:9s;animation-delay:-3s}.auth-bg .b3{animation-duration:11s;animation-delay:-6s}}
+@keyframes aur1{to{transform:translate(12vw,8vh) scale(1.1)}}@keyframes aur2{to{transform:translate(-10vw,12vh) scale(.9)}}@keyframes aur3{to{transform:translate(14vw,-6vh) scale(1.15)}}
+@keyframes gridMove{to{background-position:0 56px,0 0}}
+@keyframes beam{from{stroke-dashoffset:1320}to{stroke-dashoffset:0}}
+#auth .auth-card{background:linear-gradient(160deg,rgba(22,30,58,.55),rgba(6,9,20,.72));border-color:rgba(110,149,255,.18);
+  box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(198,244,50,.04),inset 0 1px 0 rgba(255,255,255,.08)}
+#auth .shard{border-color:rgba(110,149,255,.35);background:linear-gradient(135deg,rgba(110,149,255,.22),rgba(198,244,50,.04))}
+#auth h1 .acc{background:linear-gradient(100deg,#6E95FF,#8FB4FF 35%,#C6F432 85%);-webkit-background-clip:text;background-clip:text;color:transparent}
+#auth input:not([type=checkbox]):not(.code-in),#auth .otp .slot{background-color:rgba(4,8,22,.55);border-color:rgba(110,149,255,.14)}
+#auth input:not([type=checkbox]):not(.code-in):focus{border-color:#6E95FF;box-shadow:0 0 0 4px rgba(110,149,255,.22),0 0 24px rgba(110,149,255,.25)}
+#auth .primary{background:linear-gradient(180deg,#D6FF5C,#C6F432 55%,#A9D61E);color:#0A0F1F;box-shadow:0 10px 34px rgba(198,244,50,.3),inset 0 1px 0 rgba(255,255,255,.55)}
+#auth .seg{background:rgba(4,8,22,.55)}
+#auth .seg button[aria-selected="true"]{background:rgba(110,149,255,.22);color:#fff}
+#auth .otp .slot.cur{border-color:#C6F432;box-shadow:0 0 0 4px rgba(198,244,50,.18)}
+#auth .otp .slot.cur:not(.on)::after{background:#C6F432}
+#auth .otp-seal rect{stroke:#C6F432}
+#auth .brand-mark{box-shadow:0 10px 40px rgba(47,107,255,.5)}
+.auth-bg .grid-floor{height:65%;background-image:linear-gradient(rgba(110,149,255,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(110,149,255,.35) 1px,transparent 1px)}
+#auth .auth-card{background:linear-gradient(160deg,rgba(22,30,58,.42),rgba(6,9,20,.6))}

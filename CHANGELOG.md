@@ -1,7 +1,7 @@
 # Changelog
 
 ## 2.4.0 — 2026-10-21
-- New sign-in screen: dark frosted-glass card with corner shards over slowly drifting gold and blue ribbons (pure SVG, no images), gold gradient headline and button with arrow.
+- New sign-in screen: dark frosted-glass card with corner shards over a futuristic backdrop in Luca colors: drifting blue, indigo and lime aurora, a moving perspective grid and light beams (pure CSS/SVG, no images); blue-to-lime headline and lime button with arrow.
 - Icons inside the name, email and password fields; eye / eye-off icon to show the password.
 - Sign-up now asks to confirm the password and to accept the terms and privacy policy.
 

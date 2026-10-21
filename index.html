@@ -27,17 +27,19 @@
 <div id="boot" class="bootscreen" role="status" aria-label="Cargando Luca"><img class="brand-mark boot-mark" src="logo/logo.svg" alt="" aria-hidden="true"></div>
 
 <div class="wrap auth" id="auth" hidden>
-  <div class="auth-bg" aria-hidden="true"><svg viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid slice">
-    <defs>
-      <linearGradient id="rg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a2a10"/><stop offset=".45" stop-color="#F5B83D"/><stop offset=".55" stop-color="#FFE7A3"/><stop offset="1" stop-color="#2a1d08"/></linearGradient>
-      <linearGradient id="rg2" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b1a3a"/><stop offset=".5" stop-color="#2F6BFF"/><stop offset="1" stop-color="#06102a"/></linearGradient>
-      <linearGradient id="rg3" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#111"/><stop offset=".5" stop-color="#5a5a60"/><stop offset="1" stop-color="#0c0c0e"/></linearGradient>
-      <filter id="rblur"><feGaussianBlur stdDeviation="6"/></filter>
-    </defs>
-    <g class="rb r1"><path d="M-120 260C120 120 330 420 560 300S900 80 980 160" stroke="url(#rg1)" stroke-width="70" fill="none" stroke-linecap="round" filter="url(#rblur)"/><path d="M-120 300C120 160 330 460 560 340S900 120 980 200" stroke="url(#rg1)" stroke-width="10" fill="none" opacity=".8"/></g>
-    <g class="rb r2"><path d="M-100 820C160 640 360 900 600 760S880 560 960 600" stroke="url(#rg3)" stroke-width="120" fill="none" stroke-linecap="round" filter="url(#rblur)"/><path d="M-100 760C160 580 360 840 600 700S880 500 960 540" stroke="url(#rg1)" stroke-width="14" fill="none" opacity=".7"/></g>
-    <g class="rb r3"><path d="M900 420C700 520 600 380 420 520S120 760 -80 700" stroke="url(#rg2)" stroke-width="46" fill="none" stroke-linecap="round" filter="url(#rblur)" opacity=".75"/></g>
-  </svg></div>
+  <div class="auth-bg" aria-hidden="true">
+    <i class="aur a1"></i><i class="aur a2"></i><i class="aur a3"></i>
+    <div class="grid-floor"></div>
+    <svg class="beams" viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="bm1" x1="0" x2="1"><stop offset="0" stop-color="#2F6BFF" stop-opacity="0"/><stop offset=".5" stop-color="#5B8CFF"/><stop offset=".8" stop-color="#C6F432"/><stop offset="1" stop-color="#C6F432" stop-opacity="0"/></linearGradient>
+        <linearGradient id="bm2" x1="1" x2="0"><stop offset="0" stop-color="#3A1FE0" stop-opacity="0"/><stop offset=".5" stop-color="#7C5CFF"/><stop offset="1" stop-color="#2F6BFF" stop-opacity="0"/></linearGradient>
+      </defs>
+      <path class="bm b1" d="M-100 300C150 180 340 420 560 300S880 120 960 180" stroke="url(#bm1)"/>
+      <path class="bm b2" d="M-100 760C160 600 380 860 600 720S860 560 960 600" stroke="url(#bm2)"/>
+      <path class="bm b3" d="M900 470C700 560 580 420 420 540S140 740 -80 690" stroke="url(#bm1)"/>
+    </svg>
+  </div>
   <div class="auth-card"><i class="shard tl" aria-hidden="true"></i><i class="shard br" aria-hidden="true"></i>
     <div class="brand" translate="no"><img class="brand-mark" src="logo/logo.svg" alt="" aria-hidden="true">Luca</div>
     <h1>Tu plata, <span class="acc">clara.</span></h1>
