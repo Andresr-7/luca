@@ -982,7 +982,7 @@ function renderPlan(){
       <div class="hint">${pro?(perfil.plan_until?"Activo hasta el "+fechaCorta(String(perfil.plan_until).slice(0,10)):"Activo"):"Todo incluido mientras Luca está en lanzamiento."}</div></div>
       <span class="chip ${pro?"in":""}">${pro?"Activo":"Tu plan"}</span></div>
     <ul class="checks"><li>Tarjetas en pesos y dólares, sin límite</li><li>Quincena, agenda y presupuestos</li><li>Cuentas de ahorro y metas</li><li>Sincronización entre celular y computador</li><li>Exportar a Excel y respaldos</li></ul>
-    ${pro?"":`<p class="hint">Luca Pro llega pronto. Te avisaremos antes de que cambie algo, y lo que ya tienes seguirá siendo gratis.</p>`}
+    ${pro?"":`<p class="hint">Luca Pro llega pronto.</p>`}
     ${CONFIG.PAGOS&&CONFIG.PAGOS.activo&&!pro?'<button class="primary" id="plPro">Mejorar a Pro</button>':""}`;
   if(el.dataset.h===html)return;el.dataset.h=html;el.innerHTML=html;
   $("#plPro")&&($("#plPro").onclick=irAPagar);

@@ -218,6 +218,7 @@ window.LUCA_I18N={en:{
 "Luca Gratis":"Luca Free","Luca Pro":"Luca Pro","Activo":"Active","Activo hasta el {0}":"Active until {0}","Todo incluido mientras Luca está en lanzamiento.":"Everything included while Luca is launching.",
 "Tarjetas en pesos y dólares, sin límite":"Cards in pesos and dollars, no limit","Quincena, agenda y presupuestos":"Paychecks, calendar and budgets","Cuentas de ahorro y metas":"Savings accounts and goals",
 "Sincronización entre celular y computador":"Sync between phone and computer","Exportar a Excel y respaldos":"Excel export and backups",
+"Luca Pro llega pronto.":"Luca Pro is coming soon.",
 "Luca Pro llega pronto. Te avisaremos antes de que cambie algo, y lo que ya tienes seguirá siendo gratis.":"Luca Pro is coming soon. We'll let you know before anything changes, and what you have now stays free.",
 "Pásate a Pro":"Go Pro","Los pagos todavía no están activos.":"Payments aren't active yet.","Los pagos todavía no están activos":"Payments aren't active yet",
 "En el plan gratis puedes tener hasta {0} tarjetas. Con Pro no tienes límite.":"On the free plan you can have up to {0} cards. Pro has no limit.",
