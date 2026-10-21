@@ -522,3 +522,44 @@ nav.tabs button[aria-current="page"] svg{transform:scale(1.06)}
 .fab::before{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
 .fab::before{content:none;display:none}
 .fab svg{display:block;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+
+/* ---------- v1.4: tarjetas con colores de uso y aspecto de app nativa ---------- */
+.uso-bar{height:8px;border-radius:99px;background:var(--fill);overflow:hidden}
+.uso-bar i{display:block;height:100%;border-radius:99px;transition:width .6s var(--ease-ios)}
+.uso-bar.low i{background:var(--pos)}.uso-bar.mid i{background:#FFB020}.uso-bar.high i{background:#FF7A00}.uso-bar.over i{background:var(--neg)}
+.uso-txt.low{color:var(--pos)}.uso-txt.mid{color:#C77700}.uso-txt.high{color:#E06A00}.uso-txt.over{color:var(--neg)}
+.uso-pill{font-size:13px;font-weight:600;padding:4px 10px;border-radius:99px;white-space:nowrap}
+.uso-pill.low{background:color-mix(in srgb,var(--pos) 14%,transparent);color:var(--pos)}
+.uso-pill.mid{background:rgba(255,176,32,.18);color:#C77700}.uso-pill.high{background:rgba(255,122,0,.16);color:#E06A00}.uso-pill.over{background:var(--neg-pale);color:var(--neg)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .uso-txt.mid,:root:not([data-theme="light"]) .uso-pill.mid{color:#FFC24D}:root:not([data-theme="light"]) .uso-txt.high,:root:not([data-theme="light"]) .uso-pill.high{color:#FF9F45}}
+:root[data-theme="dark"] .uso-txt.mid,:root[data-theme="dark"] .uso-pill.mid{color:#FFC24D}:root[data-theme="dark"] .uso-txt.high,:root[data-theme="dark"] .uso-pill.high{color:#FF9F45}
+.cupo-sum{background:var(--surface);border-radius:var(--r-lg);padding:18px;display:flex;flex-direction:column;gap:10px}
+.cs-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.cs-big{font-size:clamp(30px,8vw,38px);font-weight:700;letter-spacing:-.035em;line-height:1.1}
+.cs-sub{display:flex;justify-content:space-between;font-size:13px;color:var(--mute)}
+.tcard{gap:12px}
+.t-big{font-size:clamp(28px,7.5vw,34px);font-weight:700;letter-spacing:-.035em;line-height:1.1}
+.uso{display:flex;flex-direction:column;gap:6px}
+.uso-row{display:flex;justify-content:space-between;gap:10px;font-size:15px}
+.ios-list{display:flex;flex-direction:column;background:var(--surface-2);border-radius:12px;overflow:hidden}
+.ios-list.solo{background:var(--surface)}
+.ios-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 14px;font-size:15px;min-height:44px;background:transparent;border-radius:0;color:var(--ink);text-align:left;width:100%;position:relative}
+.ios-row+.ios-row::before{content:"";position:absolute;top:0;left:14px;right:0;border-top:.5px solid var(--line)}
+.ios-row b{font-weight:600;text-align:right}
+.ios-row span{color:var(--mute)}
+.ios-list.solo .ios-row span{color:var(--ink)}
+.sec-h{font-size:13px;text-transform:uppercase;letter-spacing:.02em;color:var(--mute);padding:8px 4px 0}
+
+/* Aspecto nativo en el celular: sin barra de marca, título compacto al bajar, sin chip de estado */
+#navMini{position:fixed;left:0;right:0;top:0;z-index:25;padding:calc(env(safe-area-inset-top,0px) + 10px) 16px 10px;text-align:center;font-size:17px;font-weight:600;letter-spacing:-.02em;
+  background:var(--chrome);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);box-shadow:0 .5px 0 var(--line);opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .2s ease,transform .25s var(--ease-ios)}
+#navMini.on{opacity:1;transform:none}
+#syncChip:not(.off){display:none}
+@media (max-width:959px){
+  .appbar{padding:0;min-height:0}.appbar .brand{display:none}
+  header.top{padding-top:calc(env(safe-area-inset-top,0px) + 18px)}
+  header.top .eyebrow{font-size:12px}
+  .card,.libre,.quick,.panel,.bars,.stat,.payday,.ciclo,.payoff-card,.cupo-sum{box-shadow:none}
+  ::-webkit-scrollbar{display:none}
+}
+*:focus:not(:focus-visible){outline:none}

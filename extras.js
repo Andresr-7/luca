@@ -567,5 +567,9 @@ function renderExtras(){
   renderAviso();renderLibre();renderRapidos();renderWrapPromo();renderLibreDeuda();renderRapList();renderAvisosPanel();
   clearTimeout(avisoTimer);avisoTimer=setTimeout(()=>{if(user){guardarAvisosSW();notificarHoy()}},1500);
 }
+/* Título compacto al hacer scroll, como en iPhone */
+(()=>{const m=document.createElement("div");m.id="navMini";m.setAttribute("aria-hidden","true");document.body.appendChild(m);
+  const upd=()=>{const t=$("#pageTitle");const on=!$("#app").hidden&&scrollY>70&&innerWidth<960;if(on&&t&&m.textContent!==t.textContent)m.textContent=t.textContent;m.classList.toggle("on",on)};
+  addEventListener("scroll",upd,{passive:true});addEventListener("resize",upd)})();
 renderAvisosPanel();
 init();

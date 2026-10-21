@@ -42,7 +42,7 @@ function cacheSave(){try{localStorage.setItem(cacheKey(),JSON.stringify(S))}catc
 function cacheLoad(){try{const r=JSON.parse(localStorage.getItem(cacheKey())||"null");if(r)Object.assign(S,r)}catch(e){}}
 function emptyState(){COLS.forEach(c=>S[c]=[]);S.ajustes=defaultAjustes()}
 function errMsg(){return "No se pudo guardar. Revisa tu conexión e inténtalo de nuevo."}
-function setSync(t){const c=$("#syncChip");if(c)c.textContent=t}
+function setSync(t){const c=$("#syncChip");if(c){c.textContent=t;c.classList.toggle("off",/Sin conexi|Conectando/.test(t))}}
 const fila=(col,id,data)=>({user_id:user.id,collection:col,id,data,updated_at:new Date().toISOString()});
 async function put(col,id,data){
   const arr=S[col];const i=arr.findIndex(x=>x.id===id);const row={...data,id};i>=0?arr[i]=row:arr.push(row);
@@ -513,26 +513,37 @@ function renderTarjetas(){
       ${ms.length?'<div class="list" style="background:var(--surface-2)">'+ms.map(m=>movRow(m,false)).join("")+"</div>":'<p class="hint" style="margin:0">Sin movimientos todavía.</p>'}
       <div class="actions"><button class="primary" data-mov="${esc(c.id)}">+ Movimiento</button><button data-hist="${esc(c.id)}">Ver todo</button><button data-edita="${esc(c.id)}">Editar</button></div>
     </article>`}).join(""):'<div class="empty">Agrega tus cuentas (Ahorros Bancolombia, Nequi, Nu, etc.) con lo que tienes hoy. Después, los gastos, la quincena y los pagos de tarjeta pueden moverse solos desde o hacia cada cuenta.</div>';
-  const sorted=[...S.tarjetas].sort((a,b)=>(a.orden??99)-(b.orden??99)||String(a.nombre).localeCompare(b.nombre));
-  $("#cardsList").innerHTML=sorted.length?sorted.map(t=>{const due=dueInfo(t.dia);const corte=t.corte?nextOn(t.corte):null;return `
-    <article class="card ${due?due.cls:""}">
+  const usoCls=p=>p>=100?"over":p>=80?"high":p>=50?"mid":"low";
+  const usoTxt=p=>p>=100?"Sobrecupo":p>=80?"Casi lleno":p>=50?"A la mitad":"Saludable";
+  const conDeuda=t=>deudaCopCard(t)>0||t.saldo==null&&t.saldoUsd==null;
+  const ordenDue=t=>{const d=dueInfo(t.dia);return d?d.days:999};
+  const activas=S.tarjetas.filter(conDeuda).sort((a,b)=>ordenDue(a)-ordenDue(b)||deudaCopCard(b)-deudaCopCard(a));
+  const libres=S.tarjetas.filter(t=>!conDeuda(t)).sort((a,b)=>String(a.nombre).localeCompare(b.nombre));
+  const cupoTot=S.tarjetas.reduce((s,t)=>s+(t.cupo||0),0),usoTot=S.tarjetas.reduce((s,t)=>s+(t.cupo?deudaCopCard(t):0),0),pTot=cupoTot?usoTot/cupoTot*100:0;
+  const resumen=S.tarjetas.length?`<div class="cupo-sum">
+      <div class="cs-top"><div><div class="eyebrow">Deuda total en tarjetas</div><div class="cs-big num">${fmt(S.tarjetas.reduce((s,t)=>s+deudaCopCard(t),0))}</div></div>
+      ${cupoTot?`<span class="uso-pill ${usoCls(pTot)}">${Math.round(pTot)}% del cupo</span>`:""}</div>
+      ${cupoTot?`<div class="uso-bar ${usoCls(pTot)}"><i style="width:${Math.min(100,pTot)}%"></i></div><div class="cs-sub num"><span>Usado ${fmt(usoTot)}</span><span>Disponible ${fmt(Math.max(0,cupoTot-usoTot))}</span></div>`:""}
+    </div>`:"";
+  const tarjeta=t=>{const due=dueInfo(t.dia);const corte=t.corte?nextOn(t.corte):null;const tot=deudaCopCard(t);const p=t.cupo&&(t.saldo!=null||t.saldoUsd!=null)?tot/t.cupo*100:null;return `
+    <article class="card tcard">
       <div class="card-top"><h3>${esc(t.nombre)}</h3>${due?`<span class="chip ${due.cls}">${due.label}</span>`:'<span class="chip">Sin fecha</span>'}</div>
-      <div class="kv">
-        <div><span class="k">Deuda${t.usd?" en pesos":""}</span><span class="val num">${t.saldo!=null?fmt(t.saldo):'<span class="na">Sin registrar</span>'}</span></div>
-        <div><span class="k">Mínimo${t.usd?" en pesos":""}</span><span class="val num">${t.minimo!=null?fmt(t.minimo):'<span class="na">Aún no disponible</span>'}</span></div>
-        ${t.usd?`<div><span class="k">Deuda en dólares</span><span class="val num">${t.saldoUsd!=null?fmtU(t.saldoUsd):'<span class="na">Sin registrar</span>'}</span></div>
-        <div><span class="k">Mínimo en dólares</span><span class="val num">${t.minimoUsd!=null?fmtU(t.minimoUsd):'<span class="na">Aún no disponible</span>'}</span></div>`:""}
-        <div><span class="k">Fecha límite de pago</span><span class="val">${due?due.txt:'<span class="na">Sin definir</span>'}</span></div>
-        <div><span class="k">Fecha de corte</span><span class="val">${corte?dLabel(corte):'<span class="na">Sin definir</span>'}</span></div>
+      <div><div class="eyebrow">Deuda total</div><div class="t-big num">${t.saldo==null&&t.saldoUsd==null?'<span class="na">Sin registrar</span>':fmt(tot)}</div>
+        ${t.usd&&t.saldoUsd?`<div class="hint num">${fmt(t.saldo||0)} + ${fmtU(t.saldoUsd)} · dólar a ${fmt(trm())}</div>`:""}</div>
+      ${p!=null?`<div class="uso"><div class="uso-row num"><span>Cupo usado <b class="uso-txt ${usoCls(p)}">${Math.round(p)}% · ${usoTxt(p)}</b></span><span class="muted">de ${fmt(t.cupo)}</span></div>
+        <div class="uso-bar ${usoCls(p)}"><i style="width:${Math.min(100,p)}%"></i></div>
+        <div class="hint num">Disponible ${fmt(Math.max(0,t.cupo-tot))}${p>=100?" · te pasaste por "+fmt(tot-t.cupo):""}</div></div>`:""}
+      <div class="ios-list">
+        <div class="ios-row"><span>Pago mínimo</span><b class="num">${minNA(t)?'<span class="na">Aún no disponible</span>':esc(minLabel(t))}</b></div>
+        <div class="ios-row"><span>Fecha límite</span><b>${due?due.txt:'<span class="na">Sin definir</span>'}</b></div>
+        <div class="ios-row"><span>Fecha de corte</span><b>${corte?dLabel(corte):'<span class="na">Sin definir</span>'}</b></div>
       </div>
-      ${t.usd?`<div class="kv" style="background:var(--surface-2);border-radius:10px;padding:10px 12px">
-        <div><span class="k">Deuda total en COP</span><span class="val num">${fmt(deudaCopCard(t))}</span></div>
-        <div><span class="k">Mínimo total en COP</span><span class="val num">${minNA(t)?'<span class="na">Aún no disponible</span>':fmt(minTotal(t))}</span></div>
-        <div style="grid-column:1/-1"><span class="hint">Dólares convertidos a ${fmt(trm())} (${rateName()})</span></div></div>`:""}
-      ${t.cupo?(()=>{const u=deudaCopCard(t),p=u/t.cupo*100;return `<div class="stack" style="gap:6px"><div class="small muted">Cupo ${fmt(t.cupo)} · usado <b style="color:${p>=90?"var(--danger)":"var(--ink)"}">${Math.round(p)}%</b> (${fmt(u)}${t.usd&&t.saldoUsd?", incluye dólares":""}) · disponible ${fmt(Math.max(0,t.cupo-u))}</div><div class="meter"><i style="width:${Math.min(100,p)}%;${p>=90?"background:var(--danger)":""}"></i></div></div>`})():""}
       ${typeof payoffCard==="function"?payoffCard(t):""}
       <div class="actions"><button class="primary" data-pay="${esc(t.id)}">Registrar pago</button><button data-edit="${esc(t.id)}">Editar</button></div>
-    </article>`}).join(""):'<div class="empty">Aún no hay tarjetas. Agrega la primera con el botón de abajo.</div>';
+    </article>`};
+  $("#cardsList").innerHTML=S.tarjetas.length?resumen+activas.map(tarjeta).join("")+
+    (libres.length?`<div class="sec-h">Sin deuda</div><div class="ios-list solo">${libres.map(t=>`<button class="ios-row" data-edit="${esc(t.id)}"><span>${esc(t.nombre)}</span><b class="muted num">${t.cupo?"Cupo "+fmt(t.cupo):"Al día"}</b></button>`).join("")}</div>`:"")
+    :'<div class="empty">Aún no hay tarjetas. Agrega la primera con el botón de abajo.</div>';
 }
 function renderMovs(){
   const meses=new Set([monthKey(today()),...S.gastos.map(g=>monthKey(g.fecha)),...S.ingresos.map(i=>monthKey(i.fecha)),...S.pagos.map(p=>monthKey(p.fecha))].filter(Boolean));
@@ -895,7 +906,7 @@ $("#fCat").onsubmit=async e=>{e.preventDefault();const n=$("#catNom").value.trim
 document.querySelectorAll("#app input").forEach(i=>i.setAttribute("autocomplete","off"));
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(f)leerRespaldo(f);e.target.value=""});
 /* ---------- Tu cuenta ---------- */
-const APP_VERSION="1.3.0";
+const APP_VERSION="1.4.0";
 const REPO_URL="https://github.com/Andresr-7/luca";
 const SOPORTE="luca.app.col@gmail.com";
 function nombreUsuario(){
