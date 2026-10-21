@@ -831,3 +831,22 @@ nav.tabs{border-top:1px solid var(--glass-line)}
 .primary{background:linear-gradient(180deg,color-mix(in srgb,var(--primary) 88%,#fff),var(--primary))}
 .brand-mark{box-shadow:0 6px 20px rgba(47,107,255,.35)}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){:root{--surface:#fff}}
+
+/* ---------- v2.6: rendimiento ---------- */
+/* Listas largas: el navegador no dibuja lo que está fuera de pantalla */
+.list .item,.ios-list .item,#v-movs .item{content-visibility:auto;contain-intrinsic-size:auto 64px}
+.panel,.card,.hero,.block{contain:layout style}
+body::before{will-change:transform}
+/* Modo liviano (se activa solo en celulares lentos): mismo diseño, sin desenfoque en vivo ni animaciones de fondo */
+html.lite *,html.lite *::before,html.lite *::after{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+html.lite body::before{animation:none!important;will-change:auto}
+html.lite{--surface:color-mix(in srgb,var(--canvas) 18%,#fff 82%);--surface-2:color-mix(in srgb,var(--canvas) 35%,#fff 65%);--chrome:color-mix(in srgb,var(--canvas) 10%,#fff 90%)}
+@media (prefers-color-scheme:dark){html.lite:not([data-theme="light"]){--surface:#121a33;--surface-2:#1a2444;--chrome:#0a0f22}}
+html.lite[data-theme="dark"]{--surface:#121a33;--surface-2:#1a2444;--chrome:#0a0f22}
+html.lite .sheet{background:var(--canvas)!important}
+html.lite #auth .auth-card{background:linear-gradient(160deg,#141c38,#080c1a)}
+html.lite .auth-bg .aur,html.lite .auth-bg .grid-floor,html.lite .auth-bg .bm{animation:none!important}
+html.lite .auth-bg .aur{filter:blur(40px)}
+html.lite .glass-shadow,html.lite .panel,html.lite .card,html.lite .hero{box-shadow:none}
+.lite-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.lite-row small{font-size:13px;line-height:1.35}

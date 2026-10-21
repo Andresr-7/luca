@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.6.0 — 2026-10-21 · Performance
+- Only the visible tab renders on each update; the others render when the phone is idle or when opened (~33% less work per update on a 6× throttled CPU).
+- Realtime changes are coalesced into one render per frame; local cache writes are batched and flushed on hide.
+- Long lists use `content-visibility` so off-screen rows are not painted.
+- Fast mode: on slow phones (detected by measuring frame times on first launch, or by device memory) the glass blur and animated background are replaced by solid equivalents — scrolling went from ~32 to ~56 fps under 6× CPU throttling. Manual switch in Más → Apariencia.
+
 ## 2.5.0 — 2026-10-21
 - Luca glass theme across the whole app, in light and dark: slowly drifting blue, indigo and lime aurora behind frosted translucent cards, sheets and bars; blue-to-indigo hero with a lime glow; Luca blue as the primary color.
 

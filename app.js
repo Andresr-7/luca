@@ -38,7 +38,10 @@ let mes=monthKey(today());
 let sb=null,user=null,perfil={plan:"free",plan_until:null},canal=null;
 const defaultAjustes=()=>({montoPago:null,diasPago:[15,30],otros:null,trm:null,trmFecha:null,fijos:[],categorias:DEF_CATS.slice(),presupuestos:{}});
 const cacheKey=()=>"luca-cache-"+(user?user.id:"anon");
-function cacheSave(){try{localStorage.setItem(cacheKey(),JSON.stringify(S))}catch(e){}}
+/* Guardar en el celular sin frenar la pantalla: se agrupa y se escribe cuando hay un respiro. */
+let cacheT=0;function cacheSaveYa(){clearTimeout(cacheT);cacheT=0;if(!user)return;try{localStorage.setItem(cacheKey(),JSON.stringify(S))}catch(e){}}
+function cacheSave(){clearTimeout(cacheT);cacheT=setTimeout(cacheSaveYa,350)}
+addEventListener("pagehide",()=>{if(cacheT)cacheSaveYa()});document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&cacheT)cacheSaveYa()});
 function cacheLoad(){try{const r=JSON.parse(localStorage.getItem(cacheKey())||"null");if(r)Object.assign(S,r)}catch(e){}}
 function emptyState(){COLS.forEach(c=>S[c]=[]);S.ajustes=defaultAjustes()}
 function errMsg(){return "No se pudo guardar. Revisa tu conexión e inténtalo de nuevo."}
@@ -79,11 +82,11 @@ function subscribe(){
   if(canal)sb.removeChannel(canal);
   canal=sb.channel("docs-"+user.id)
     .on("postgres_changes",{event:"*",schema:"public",table:"docs",filter:"user_id=eq."+user.id},p=>{
-      if(p.eventType==="DELETE"){const o=p.old||{};if(o.collection&&S[o.collection]){S[o.collection]=S[o.collection].filter(x=>x.id!==o.id);cacheSave();render()}return}
+      if(p.eventType==="DELETE"){const o=p.old||{};if(o.collection&&S[o.collection]){S[o.collection]=S[o.collection].filter(x=>x.id!==o.id);cacheSave();renderPronto()}return}
       const r=p.new;if(!r||!r.collection)return;
       if(r.collection==="ajustes"){if(r.id==="principal")S.ajustes={...defaultAjustes(),...r.data}}
       else if(S[r.collection]){const arr=S[r.collection];const i=arr.findIndex(x=>x.id===r.id);const row={...r.data,id:r.id};i>=0?arr[i]=row:arr.push(row)}
-      cacheSave();render();
+      cacheSave();renderPronto();
     })
     .subscribe(st=>{if(st==="SUBSCRIBED")setSync("Sincronizado");else if(st==="CHANNEL_ERROR"||st==="TIMED_OUT")setSync("Sin conexión")});
 }
@@ -322,7 +325,7 @@ async function start(u){
   else if(ok)maybeOnboard();
 }
 function limpiarLocal(){try{Object.keys(localStorage).filter(k=>/^luca-(cache-|bloqueo)/.test(k)||/^sb-.*-auth-token$/.test(k)).forEach(k=>localStorage.removeItem(k))}catch(e){}}
-function stop(){if(canal&&sb)sb.removeChannel(canal);canal=null;if(user)limpiarLocal();user=null;emptyState();closeSheet();showAuth()}
+function stop(){clearTimeout(cacheT);cacheT=0;if(canal&&sb)sb.removeChannel(canal);canal=null;if(user)limpiarLocal();user=null;emptyState();closeSheet();showAuth()}
 async function init(){
   const C=window.CONFIG||{};
   if(!window.supabase||!C.SUPABASE_URL||/TU-PROYECTO/.test(C.SUPABASE_URL)){
@@ -399,9 +402,17 @@ function antesDe(limit){
 function render(){
   const d=new Date();const nom=user?nombreUsuario():"";$("#monthLabel").textContent=(nom?"Hola, "+nom+" · ":"")+MESES[d.getMonth()]+" "+d.getFullYear();
   const T=totals(),a=S.ajustes;
-  renderResumen(T,a);renderAgenda();renderTarjetas();renderMovs();renderMas(a);renderCuenta();renderPlan();
+  renderResumen(T,a);
+  // Solo se dibuja ya la pestaña que se está viendo; las demás, cuando el celular está libre o al abrirlas.
+  for(const k of ["agenda","tarjetas","movs","mas"]){if(k===tabActual)VISTAS[k]();else sucias.add(k)}
   if(typeof renderExtras==="function")renderExtras(T);
+  if(sucias.size)enReposo(limpiarSucias);
 }
+let tabActual="resumen",rPronto=0;const sucias=new Set();
+const VISTAS={agenda:()=>renderAgenda(),tarjetas:()=>renderTarjetas(),movs:()=>renderMovs(),mas:()=>{renderMas(S.ajustes);renderCuenta();renderPlan()}};
+const enReposo=f=>(window.requestIdleCallback?requestIdleCallback(f,{timeout:1200}):setTimeout(f,120));
+function limpiarSucias(){const k=sucias.values().next().value;if(!k)return;sucias.delete(k);if(user)VISTAS[k]();if(sucias.size)enReposo(limpiarSucias)}
+function renderPronto(){if(rPronto)return;rPronto=requestAnimationFrame(()=>{rPronto=0;render()})}
 function renderResumen(T,a){
   let disp=null;
   if(a.montoPago||T.recibido||a.otros){
@@ -886,6 +897,7 @@ function metaSheet(m){
 /* ---------- Eventos ---------- */
 const TITLES={resumen:"Resumen",agenda:"Agenda",tarjetas:"Cuentas y tarjetas",movs:"Movimientos",mas:"Más"};
 function go(tab){
+  tabActual=tab;if(sucias.has(tab)){sucias.delete(tab);VISTAS[tab]()}
   Object.keys(TITLES).forEach(v=>$("#v-"+v).hidden=v!==tab);
   document.querySelectorAll("nav.tabs button").forEach(b=>b.dataset.tab===tab?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current"));
   $("#pageTitle").textContent=TITLES[tab];window.scrollTo(0,0);
@@ -939,7 +951,7 @@ $("#fCat").onsubmit=async e=>{e.preventDefault();const n=$("#catNom").value.trim
 document.querySelectorAll("#app input").forEach(i=>i.setAttribute("autocomplete","off"));
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(f)leerRespaldo(f);e.target.value=""});
 /* ---------- Tu cuenta ---------- */
-const APP_VERSION="2.5.0";
+const APP_VERSION="2.6.0";
 const REPO_URL="https://github.com/Andresr-7/luca";
 const SOPORTE="luca.app.col@gmail.com";
 function nombreUsuario(){
@@ -1089,3 +1101,8 @@ function maybeOnboard(){
   $("#sheetBack").hidden=false;pintar();
 }
 
+
+/* Modo rápido manual */
+(()=>{const b=$("#swLite");if(!b)return;const h=document.documentElement;const pinta=()=>b.setAttribute("aria-checked",h.classList.contains("lite"));pinta();
+  b.onclick=()=>{const on=!h.classList.contains("lite");h.classList.toggle("lite",on);try{localStorage.setItem("luca-lite",on?"1":"0")}catch(e){}pinta();vibrar(8)};
+  addEventListener("load",()=>setTimeout(pinta,3500))})();
