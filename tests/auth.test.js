@@ -62,7 +62,7 @@ const w=(p,ms=250)=>p.waitForTimeout(ms);
  // entrar con código
  await p.click('[data-paso="codigo-pedir"]');await w(p);await p.fill("#aMail","nadie@test.co");await p.click("#fAuth .primary");await w(p);
  T("código a correo inexistente",(await p.textContent("#authMsg")).includes("No encontramos"));
- await p.fill("#aMail","ana@test.co");await p.click("#fAuth .primary");await w(p);await p.fill("#aCode","123456");await p.click("#fAuth .primary");await w(p,600);
+ await p.fill("#aMail","ana@test.co");await p.click("#fAuth .primary");await w(p);await p.fill("#aCode","123456");await w(p,700);
  T("entró con código",await p.isVisible("#app"));
  // eliminar cuenta
  await p.click('nav.tabs [data-tab="mas"]');await w(p);await p.click("#cDel");await p.click("#cDel");await w(p,500);
@@ -73,7 +73,11 @@ const w=(p,ms=250)=>p.waitForTimeout(ms);
  ({ctx,p}=await ctxFor(b,{confirm:true}));await p.goto("https://app.test/");await w(p,500);
  await p.click('[data-paso="crear"]');await p.fill("#aMail","beto@test.co");await p.fill("#aPass","ClaveSegura1!");await p.click("#fAuth .primary");await w(p);
  T("pide código de verificación",await p.isVisible("#aCode"));
- await p.fill("#aCode","123456");await p.click("#fAuth .primary");await w(p,600);
+ T("casillas de código",(await p.$$("#otpDeck .slot")).length===6);
+ await p.fill("#aCode","000000");await w(p,250);
+ T("código malo: tiembla y avisa",await p.evaluate(()=>document.querySelector("#otpDeck").classList.contains("err"))&&(await p.textContent("#authMsg")).includes("no es correcto"));
+ await w(p,600);T("casillas se vacían",(await p.inputValue("#aCode"))==="");
+ await p.fill("#aCode","123456");await w(p,700);
  T("verificó y entró",await p.isVisible("#app"));
  T("sin errores JS (B)",p.errs.length===0,p.errs.join(" | "));
  await ctx.close();

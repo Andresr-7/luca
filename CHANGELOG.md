@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.3.0 — 2026-10-21
+- New sign-in code input: six "card" slots that fan out like a hand of cards while verifying (one rotation around a pivot below the row), a progress seal that laps the edge, green on success, shake and auto-clear on a wrong code. Auto-submits on the 6th digit; paste and iOS/Android one-time-code autofill still work (single real input underneath). Respects reduced motion.
+
 ## 2.2.0 — 2026-10-21 · Security
 - Strict Content-Security-Policy (no inline or third-party scripts) and referrer policy on every page.
 - Supabase client self-hosted and pinned in `vendor/` (no CDN supply-chain risk); clickjacking protection.
