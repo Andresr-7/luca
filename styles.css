@@ -1,3 +1,4 @@
+@font-face{font-family:"Inter Luca";src:url("fonts/inter.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
 /* Luca — sistema de diseño estilo Apple / iOS.
    Base: DESIGN.md de Apple (awesome-design-md): un solo azul de acción, fondo gris perla #f5f5f7, tinta #1d1d1f,
    tipografía del sistema (SF en Apple), cuerpo de 17px con tracking negativo, pesos 400/600/700, presión scale(.95).
@@ -17,7 +18,8 @@ img{max-width:100%}
   --hero:#1D1D1F; --hero-ink:#F5F5F7; --hero-num:#FFFFFF; --hero-btn:rgba(255,255,255,.16); --hero-cta:#0071E3; --hero-cta-ink:#FFFFFF;
   --bar:#0071E3; --scrim:rgba(0,0,0,.36); --hover:rgba(0,0,0,.04); --float:0 12px 40px rgba(0,0,0,.16);
   --chrome:rgba(249,249,251,.78); --cal-red:#FF3B30; --seg-on:#FFFFFF;
-  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue","Segoe UI",Roboto,Arial,sans-serif;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Inter Luca","Helvetica Neue",system-ui,sans-serif;
+  --spring:cubic-bezier(.2,.9,.25,1); --ease-ios:cubic-bezier(.32,.72,0,1);
   --track:-0.022em; --track-tight:-0.028em;
   --r-sm:10px; --r:12px; --r-lg:18px;
 }
@@ -482,3 +484,37 @@ html.no-scroll,html.no-scroll body{overflow:hidden}
   .story{background:rgba(0,0,0,.85)}
   .st-stage{max-width:460px;width:100%;margin:24px auto;border-radius:24px;overflow:hidden}
 }
+
+/* ---------- v1.3: tacto y movimiento tipo iPhone ---------- */
+body{font-feature-settings:"cv05","cv08","ss03";text-rendering:optimizeLegibility;-webkit-touch-callout:none}
+html{scroll-behavior:smooth;overscroll-behavior-y:none}
+button,a,.item,.qchip{-webkit-user-select:none;user-select:none}
+button{transition:transform .32s var(--spring),background-color .2s ease,opacity .2s ease,box-shadow .2s ease}
+button:active{transform:scale(.96);transition-duration:.08s}
+.item.row-btn:active,button.item:active{transform:none;background:var(--fill-2)}
+nav.tabs button:active{transform:scale(.9)}
+nav.tabs button svg{transition:transform .35s var(--spring)}
+nav.tabs button[aria-current="page"] svg{transform:scale(1.06)}
+.fab{width:58px;height:58px;min-height:58px;padding:0;border-radius:50%;font-size:0;display:grid;place-items:center;box-shadow:0 10px 30px rgba(0,80,255,.35)}
+.fab::before{content:"";width:22px;height:22px;background:linear-gradient(#fff,#fff) center/100% 3px no-repeat,linear-gradient(#fff,#fff) center/3px 100% no-repeat;border-radius:2px}
+@media (prefers-reduced-motion:no-preference){
+  .view.enter>*{animation:iosIn .42s var(--ease-ios) both}
+  .view.enter>:nth-child(2){animation-delay:.03s}.view.enter>:nth-child(3){animation-delay:.06s}.view.enter>:nth-child(4){animation-delay:.09s}
+  .view.enter>:nth-child(5){animation-delay:.12s}.view.enter>:nth-child(n+6){animation-delay:.14s}
+  @keyframes iosIn{from{opacity:0;transform:translateY(8px) scale(.995)}}
+  .sheet-back{animation:scrimIn .3s ease both}
+  @keyframes scrimIn{from{background:transparent}}
+  .sheet{animation:sheetUp .5s var(--ease-ios) both}
+  @keyframes sheetUp{from{transform:translateY(100%)}}
+  .sheet-back.closing{animation:scrimOut .28s ease forwards}
+  .sheet-back.closing .sheet{animation:sheetDown .3s var(--ease-ios) forwards}
+  @keyframes scrimOut{to{background:transparent}}
+  @keyframes sheetDown{to{transform:translateY(105%)}}
+  .toast{animation:toastIn .45s var(--spring) both}
+  @keyframes toastIn{from{opacity:0;transform:translate(-50%,16px) scale(.96)}}
+  .libre-big,.hero .big{transition:color .3s ease}
+  .item,.card,.stat,.panel,.libre,.quick,.payoff-card{transition:transform .3s var(--spring),background-color .2s ease}
+}
+@media (min-width:960px){.sheet-back.closing .sheet{animation:sheetFade .22s ease forwards}@keyframes sheetFade{to{opacity:0;transform:scale(.97)}}.sheet{animation-name:sheetPop}@keyframes sheetPop{from{opacity:0;transform:scale(.96)}}}
+.sheet.dragging{transition:none!important;animation:none!important}
+.libre::before{display:none}

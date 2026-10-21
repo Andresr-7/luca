@@ -177,7 +177,7 @@ function renderRapList(){
 document.addEventListener("click",async e=>{
   const ch=e.target.closest(".qchip[data-rap]");
   if(ch){const r=RAPIDOS[+ch.dataset.rap];if(!r||ch.disabled)return;ch.disabled=true;
-    const id=await registrarGasto({...r,fecha:today()});ch.classList.add("ok");setTimeout(()=>{ch.classList.remove("ok");ch.disabled=false},900);
+    const id=await registrarGasto({...r,fecha:today()});ch.classList.add("ok");vibrar(12);setTimeout(()=>{ch.classList.remove("ok");ch.disabled=false},900);
     if(id)toast("Gasto guardado · "+(r.valorUsd!=null?fmtU(r.valorUsd):fmt(r.valor)),{label:"Deshacer",fn:()=>deshacerGasto(id)});return}
   const dr=e.target.closest("[data-delrap]");
   if(dr){S.ajustes.rapidos=(S.ajustes.rapidos||[]).filter(x=>x.id!==dr.dataset.delrap);saveAjustes();toast("Gasto rápido quitado");return}

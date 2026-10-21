@@ -574,8 +574,19 @@ function renderMas(a){
 }
 
 /* ---------- Hojas ---------- */
-function openSheet(title,html,onMount){$("#sheetTitle").textContent=title;$("#sheetBody").innerHTML=html;$("#sheetBody").querySelectorAll("input").forEach(i=>i.setAttribute("autocomplete","off"));$("#sheetBack").hidden=false;onMount&&onMount();const f=$("#sheetBody input:not([disabled])");f&&setTimeout(()=>f.focus(),50)}
-function closeSheet(){$("#sheetBack").hidden=true;$("#sheetBody").innerHTML=""}
+let sheetT=null;
+function openSheet(title,html,onMount){clearTimeout(sheetT);$("#sheetBack").classList.remove("closing");const sh=$("#sheetBack .sheet");sh.style.transform="";$("#sheetTitle").textContent=title;$("#sheetBody").innerHTML=html;$("#sheetBody").querySelectorAll("input").forEach(i=>i.setAttribute("autocomplete","off"));$("#sheetBack").hidden=false;onMount&&onMount();const f=$("#sheetBody input:not([disabled])");f&&setTimeout(()=>f.focus(),50)}
+function closeSheet(){const b=$("#sheetBack");if(b.hidden)return;
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches){b.hidden=true;$("#sheetBody").innerHTML="";return}
+  b.classList.add("closing");clearTimeout(sheetT);sheetT=setTimeout(()=>{if(!b.classList.contains("closing"))return;b.hidden=true;b.classList.remove("closing");$("#sheetBack .sheet").style.transform="";$("#sheetBody").innerHTML=""},300)}
+/* Deslizar hacia abajo para cerrar la hoja, como en iPhone */
+(()=>{const sh=$("#sheetBack .sheet");let y0=null,dy=0;
+  sh.addEventListener("touchstart",e=>{if(sh.scrollTop>0||e.target.closest("input,select,textarea,[type=range]"))return;y0=e.touches[0].clientY;dy=0},{passive:true});
+  sh.addEventListener("touchmove",e=>{if(y0==null)return;dy=Math.max(0,e.touches[0].clientY-y0);if(dy>4){sh.classList.add("dragging");sh.style.transform=`translateY(${dy}px)`}},{passive:true});
+  sh.addEventListener("touchend",()=>{if(y0==null)return;y0=null;sh.classList.remove("dragging");
+    if(dy>110){closeSheet()}else{sh.style.transition="transform .35s cubic-bezier(.2,.9,.25,1)";sh.style.transform="";setTimeout(()=>sh.style.transition="",360)}});
+})();
+const vibrar=(ms=8)=>{try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}};
 $("#sheetClose").onclick=closeSheet;
 $("#sheetBack").addEventListener("click",e=>{if(e.target.id==="sheetBack")closeSheet()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#sheetBack").hidden)closeSheet()});
@@ -836,7 +847,7 @@ function go(tab){
   $("#pageTitle").textContent=TITLES[tab];window.scrollTo(0,0);
   const v=$("#v-"+tab);v.classList.remove("enter");void v.offsetWidth;v.classList.add("enter");
 }
-document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>go(b.dataset.tab));
+document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{vibrar(6);go(b.dataset.tab)});
 document.addEventListener("click",e=>{
   const q=s=>e.target.closest(s);let el;
   const xb=q("button.x[data-deli],button.x[data-delp],button.x[data-delmov],button.x[data-delf],button.x[data-delcat]");
@@ -884,7 +895,7 @@ $("#fCat").onsubmit=async e=>{e.preventDefault();const n=$("#catNom").value.trim
 document.querySelectorAll("#app input").forEach(i=>i.setAttribute("autocomplete","off"));
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(f)leerRespaldo(f);e.target.value=""});
 /* ---------- Tu cuenta ---------- */
-const APP_VERSION="1.2.0";
+const APP_VERSION="1.3.0";
 const REPO_URL="https://github.com/Andresr-7/luca";
 const SOPORTE="luca.app.col@gmail.com";
 function nombreUsuario(){
