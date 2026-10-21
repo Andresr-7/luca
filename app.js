@@ -208,7 +208,7 @@ function renderAuth(paso,email){
     B.innerHTML=`${social}${seg(false)}<form id="fAuth" novalidate>
       <label>Correo<input id="aMail" name="email" type="email" autocomplete="email" spellcheck="false" placeholder="tucorreo@ejemplo.com" value="${mailVal}"></label>
       ${pwField("aPass","Contraseña","current-password","Tu contraseña")}
-      <button class="primary" type="submit">Entrar</button></form>
+      <button class="primary go" type="submit">Entrar</button></form>
       <div class="auth-links"><button type="button" class="ghost" data-paso="olvide">¿Olvidaste tu contraseña?</button><button type="button" class="ghost" data-paso="codigo-pedir">Entrar con un código</button></div>`;
     $("#fAuth").onsubmit=async e=>{e.preventDefault();const email=$("#aMail").value.trim().toLowerCase(),password=$("#aPass").value;authEmail=email;
       if(!MAIL_RE.test(email)){authMsg("Escribe un correo válido, por ejemplo nombre@gmail.com.");$("#aMail").focus();return}
@@ -220,14 +220,17 @@ function renderAuth(paso,email){
     B.innerHTML=`${social}${seg(true)}<form id="fAuth" novalidate>
       <label>Tu nombre<input id="aName" name="name" autocomplete="given-name" placeholder="Cómo quieres que te salude Luca"></label>
       <label>Correo<input id="aMail" name="email" type="email" autocomplete="email" spellcheck="false" placeholder="tucorreo@ejemplo.com" value="${mailVal}"></label>
-      ${pwField("aPass","Contraseña","new-password","Mínimo 8 caracteres")}
+      <div class="pw-2">${pwField("aPass","Contraseña","new-password","Mínimo 8")}${pwField("aPass2","Confirmar","new-password","Repítela")}</div>
       <div class="pw-meter" aria-hidden="true"><i></i></div>
-      <button class="primary" type="submit">Crear mi cuenta</button></form>`;
+      <label class="check"><input type="checkbox" id="aTerms"><span>Acepto los <a href="terminos.html" target="_blank" rel="noopener">términos</a> y la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a></span></label>
+      <button class="primary go" type="submit">Crear mi cuenta</button></form>`;
     $("#aPass").addEventListener("input",e=>{const v=e.target.value;let s=0;if(v.length>=8)s++;if(v.length>=12)s++;if(/[A-Z]/.test(v)&&/[a-z]/.test(v))s++;if(/\d/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;
       const m=$(".pw-meter i");m.style.width=Math.min(100,s*20)+"%";m.dataset.s=s<=1?"low":s<=3?"mid":"high"});
     $("#fAuth").onsubmit=async e=>{e.preventDefault();const nombre=$("#aName").value.trim(),email=$("#aMail").value.trim().toLowerCase(),password=$("#aPass").value;authEmail=email;
       if(!MAIL_RE.test(email)){authMsg("Escribe un correo válido, por ejemplo nombre@gmail.com.");$("#aMail").focus();return}
       if(password.length<8){authMsg("La contraseña debe tener al menos 8 caracteres.");$("#aPass").focus();return}
+      if($("#aPass2")&&$("#aPass2").value!==password){authMsg("Las contraseñas no coinciden.");$("#aPass2").focus();return}
+      if($("#aTerms")&&!$("#aTerms").checked){authMsg("Acepta los términos para crear tu cuenta.");$("#aTerms").focus();return}
       const done=busy(e.submitter||$("#fAuth .primary"),"Creando cuenta…");
       const {data,error}=await sb.auth.signUp({email,password,options:{data:{nombre},emailRedirectTo:redirectURL()}});done();
       if(error){authMsg(authErr(error));return}
@@ -927,7 +930,7 @@ $("#fCat").onsubmit=async e=>{e.preventDefault();const n=$("#catNom").value.trim
 document.querySelectorAll("#app input").forEach(i=>i.setAttribute("autocomplete","off"));
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(f)leerRespaldo(f);e.target.value=""});
 /* ---------- Tu cuenta ---------- */
-const APP_VERSION="2.3.2";
+const APP_VERSION="2.4.0";
 const REPO_URL="https://github.com/Andresr-7/luca";
 const SOPORTE="luca.app.col@gmail.com";
 function nombreUsuario(){

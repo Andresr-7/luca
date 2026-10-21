@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.4.0 — 2026-10-21
+- New sign-in screen: dark frosted-glass card with corner shards over slowly drifting gold and blue ribbons (pure SVG, no images), gold gradient headline and button with arrow.
+- Icons inside the name, email and password fields; eye / eye-off icon to show the password.
+- Sign-up now asks to confirm the password and to accept the terms and privacy policy.
+
 ## 2.3.2 — 2026-10-21
 - Sign-in code now 8 digits (configurable with `OTP_LEN` in `config.js`); tighter card fan that stays on screen.
 - Every text field and select shares the code input's motion: focus halo and lift, a small pop while typing, red shake and haptic on validation errors.
