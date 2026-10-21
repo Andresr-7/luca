@@ -8,4 +8,9 @@ Para cambiarlo por el tuyo:
 2. Corre `python3 herramientas/iconos.py tu-logo.png`. Eso reemplaza `logo/logo.svg`, `logo/logo.png` y todos los íconos de `icons/`.
 3. Sube el número de `CACHE` en `sw.js` y publica.
 
-`logo/logo-original-1024.png` es el logo actual (la L que sostiene una moneda), por si quieres volver a él.
+El logo actual es la **moneda con una porción libre**: el corte de la moneda forma una L y la porción verde es “lo que te queda libre”.
+
+Archivos: `logo.svg` (ícono con fondo), `logo-cuadrado.svg` (sin esquinas, para Google Play), `simbolo.svg` y `simbolo-blanco.svg` (solo el símbolo, para fondos claros u oscuros).
+Colores: azul `#2F6BFF` → índigo `#3A1FE0`, blanco y lima `#C6F432`.
+
+`logo-original-1024.png` es el logo anterior (la L que sostiene una moneda).

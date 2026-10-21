@@ -1,7 +1,7 @@
 /* Service worker: deja la app instalable y abre aunque no haya internet.
    Cuando cambies archivos, sube el número de CACHE para que los celulares tomen la versión nueva. */
-const CACHE = "luca-v9";
-const SHELL = ["./", "index.html", "styles.css", "i18n-en.js", "i18n.js", "app.js", "extras.js", "config.js", "logo/logo.svg", "manifest.webmanifest", "privacidad.html", "terminos.html",
+const CACHE = "luca-v10";
+const SHELL = ["./", "index.html", "styles.css", "i18n-en.js", "i18n.js", "app.js", "extras.js", "config.js", "logo/logo.svg", "manifest.webmanifest", "privacidad.html", "terminos.html", "eliminar-cuenta.html",
   "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png", "icons/favicon-32.png"];
 const CDN = ["cdn.jsdelivr.net", "fonts.googleapis.com", "fonts.gstatic.com"];
 
