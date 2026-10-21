@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.4.2 — 2026-10-21
+- Sign-in with a code now waits for the verification animation: cards fan out while the seal laps the edge (at least 1.3 s), then the slots turn green with a "Verified ✓" state, and only then the app opens.
+
 ## 2.4.0 — 2026-10-21
 - New sign-in screen: dark frosted-glass card with corner shards over a futuristic backdrop in Luca colors: drifting blue, indigo and lime aurora, a moving perspective grid and light beams (pure CSS/SVG, no images); blue-to-lime headline and lime button with arrow.
 - Icons inside the name, email and password fields; eye / eye-off icon to show the password.

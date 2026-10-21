@@ -66,7 +66,7 @@ const w=(p,ms=250)=>p.waitForTimeout(ms);
  // entrar con código
  await p.click('[data-paso="codigo-pedir"]');await w(p);await p.fill("#aMail","nadie@test.co");await p.click("#fAuth .primary");await w(p);
  T("código a correo inexistente",(await p.textContent("#authMsg")).includes("No encontramos"));
- await p.fill("#aMail","ana@test.co");await p.click("#fAuth .primary");await w(p);await p.fill("#aCode","12345678");await w(p,700);
+ await p.fill("#aMail","ana@test.co");await p.click("#fAuth .primary");await w(p);await p.fill("#aCode","12345678");await w(p,2800);
  T("entró con código",await p.isVisible("#app"));
  // eliminar cuenta
  await p.click('nav.tabs [data-tab="mas"]');await w(p);await p.click("#cDel");await p.click("#cDel");await w(p,500);
@@ -81,7 +81,10 @@ const w=(p,ms=250)=>p.waitForTimeout(ms);
  await p.fill("#aCode","00000000");await w(p,250);
  T("código malo: tiembla y avisa",await p.evaluate(()=>document.querySelector("#otpDeck").classList.contains("err"))&&(await p.textContent("#authMsg")).includes("no es correcto"));
  await w(p,600);T("casillas se vacían",(await p.inputValue("#aCode"))==="");
- await p.fill("#aCode","12345678");await w(p,700);
+ await p.fill("#aCode","12345678");await w(p,500);
+ T("espera la animación antes de abrir",!(await p.isVisible("#app"))&&await p.evaluate(()=>document.querySelector("#otpDeck").classList.contains("busy")));
+ await w(p,1100);T("muestra verificado",await p.evaluate(()=>document.querySelector("#otpDeck").classList.contains("ok")));
+ await w(p,1300);
  T("verificó y entró",await p.isVisible("#app"));
  T("sin errores JS (B)",p.errs.length===0,p.errs.join(" | "));
  await ctx.close();

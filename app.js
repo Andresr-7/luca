@@ -183,7 +183,10 @@ function otpAbanico(on){const w=$("#otpDeck");if(!w)return;w.classList.toggle("b
   if(otpQuieto())return;[...w.querySelectorAll(".slot")].forEach((s,k)=>s.animate&&s.animate([{transform:"none"},{transform:`translate(${OTP_DX[k]}px,-6px) rotate(${OTP_ANG[k]}deg)`}],{duration:560,delay:k*45,easing:"cubic-bezier(.3,1.3,.5,1)",fill:"forwards",direction:on?"normal":"reverse"}))}
 function otpFallo(){const w=$("#otpDeck"),i=$("#aCode");if(!w){i&&i.select();return}otpAbanico(false);w.getAnimations&&w.querySelectorAll(".slot").forEach(s=>s.getAnimations().forEach(a=>a.cancel()));
   w.classList.add("err");vibrar([20,40,20]);setTimeout(()=>{i.value="";i.dispatchEvent(new Event("input"));w.classList.remove("err");i.focus()},650)}
-function otpOk(){const w=$("#otpDeck");if(w){w.classList.remove("busy");w.classList.add("ok");vibrar(15)}}
+let otpEspera=null;
+function otpOk(){const w=$("#otpDeck");if(!w)return;w.querySelectorAll(".slot").forEach(s=>s.getAnimations&&s.getAnimations().forEach(a=>a.cancel()));
+  w.classList.remove("busy");w.classList.add("ok");vibrar([12,40,12]);
+  if(!otpQuieto())w.querySelectorAll(".slot").forEach((s,k)=>s.animate&&s.animate([{transform:"scale(1)"},{transform:"scale(1.12)"},{transform:"scale(1)"}],{duration:380,delay:k*40,easing:"cubic-bezier(.3,1.5,.5,1)"}))}
 const codeField=()=>`<label>Código del correo<input id="aCode" name="code" class="code-in num" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="••••••" spellcheck="false"></label>`;
 function busy(b,t){const old=b.textContent;b.disabled=true;b.textContent=t;b.classList.add("lap");return()=>{b.disabled=false;b.textContent=old;b.classList.remove("lap")}}
 function startResend(fn){
@@ -247,9 +250,14 @@ function renderAuth(paso,email){
     $("#fAuth").onsubmit=async e=>{e.preventDefault();const token=$("#aCode").value.replace(/\D/g,"");
       if(token.length<OTP_LEN){authMsg("Escribe el código completo que te llegó al correo.");$("#aCode").focus();return}
       const done=busy(e.submitter||$("#fAuth .primary"),"Verificando…");
+      let soltar;otpEspera=new Promise(r=>soltar=r);const t0=Date.now();
       let r=await sb.auth.verifyOtp({email:authEmail,token,type:"email"});
       if(r.error&&verif)r=await sb.auth.verifyOtp({email:authEmail,token,type:"signup"});
-      done();if(r.error){authMsg(authErr(r.error));otpFallo()}else otpOk()};
+      if(r.error){done();otpEspera=null;soltar();authMsg(authErr(r.error));otpFallo();return}
+      // Deja ver el abanico y el sello, luego "verificado", y recién ahí abre la app.
+      const quieto=otpQuieto();await new Promise(x=>setTimeout(x,quieto?0:Math.max(0,1300-(Date.now()-t0))));
+      done();otpOk();authMsg("Código verificado",true);const b=$("#fAuth .primary");if(b)b.textContent="Verificado ✓";
+      await new Promise(x=>setTimeout(x,quieto?300:1000));otpEspera=null;soltar()};
   }else if(paso==="codigo-pedir"||paso==="olvide"){
     const olv=paso==="olvide";
     B.innerHTML=`<form id="fAuth" novalidate>
@@ -303,6 +311,7 @@ function showAuth(){pantalla("auth");renderAuth("entrar")}
 async function start(u){
   if(user&&user.id===u.id){user=u;return}
   user=u;perfil={plan:"free",plan_until:null};emptyState();cacheLoad();
+  if(otpEspera)await Promise.race([otpEspera,new Promise(r=>setTimeout(r,6000))]);
   pantalla("app");render();go("resumen");setSync("Conectando…");
   if(/[?&]code=|access_token|error_description|type=recovery/.test(location.search+location.hash))history.replaceState(null,"",location.pathname);
   let ok=false;
@@ -930,7 +939,7 @@ $("#fCat").onsubmit=async e=>{e.preventDefault();const n=$("#catNom").value.trim
 document.querySelectorAll("#app input").forEach(i=>i.setAttribute("autocomplete","off"));
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(f)leerRespaldo(f);e.target.value=""});
 /* ---------- Tu cuenta ---------- */
-const APP_VERSION="2.4.1";
+const APP_VERSION="2.4.2";
 const REPO_URL="https://github.com/Andresr-7/luca";
 const SOPORTE="luca.app.col@gmail.com";
 function nombreUsuario(){
