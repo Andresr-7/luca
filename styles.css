@@ -518,3 +518,5 @@ nav.tabs button[aria-current="page"] svg{transform:scale(1.06)}
 @media (min-width:960px){.sheet-back.closing .sheet{animation:sheetFade .22s ease forwards}@keyframes sheetFade{to{opacity:0;transform:scale(.97)}}.sheet{animation-name:sheetPop}@keyframes sheetPop{from{opacity:0;transform:scale(.96)}}}
 .sheet.dragging{transition:none!important;animation:none!important}
 .libre::before{display:none}
+.fab{position:fixed;overflow:hidden;color:transparent}
+.fab::before{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
