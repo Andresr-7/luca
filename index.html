@@ -55,12 +55,13 @@
       <div class="eyebrow" id="monthLabel">Octubre 2026</div>
       <h1 id="pageTitle">Resumen</h1>
     </div>
-    <span class="chip" id="syncChip">Conectando…</span>
+    <div class="top-acts"><span class="chip" id="syncChip">Conectando…</span><button type="button" class="icon-btn" id="btnPriv" aria-label="Ocultar montos"></button><button type="button" class="avatar-btn" id="btnPerfil" aria-label="Tu cuenta">L</button></div>
   </header>
 
   <!-- RESUMEN -->
   <main id="v-resumen" class="view">
     <section class="aviso" id="avisoBox" aria-label="Pagos que vencen pronto"></section>
+    <section class="rings-card" id="anillosBox" aria-label="Tu día"></section>
     <section class="libre" id="libreBox" aria-label="Libre hasta tu próximo pago"></section>
     <section class="quick" id="rapidoBox" aria-labelledby="qH">
       <form id="fQuick" class="quick-in" novalidate>
@@ -71,6 +72,8 @@
       <div class="row-head"><h2 class="quick-h" id="qH">Gastos rápidos</h2><button type="button" class="ghost" id="qMas">+ Otro gasto</button></div>
       <div class="qchips" id="qChips"></div>
     </section>
+    <section class="acciones" aria-label="Acciones rápidas"><button type="button" class="acc" data-accion="reparto"><span class="acc-i" style="--c:#0A84FF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="9"/></svg></span><span>Repartir quincena</span></button><button type="button" class="acc" data-accion="plan"><span class="acc-i" style="--c:#30D158"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16"/><path d="M6 15l4-4 3 3 5-6"/></svg></span><span>Plan de pago</span></button><button type="button" class="acc" data-accion="sus"><span class="acc-i" style="--c:#BF5AF2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l3 3-3 3"/><path d="M4 11V9a4 4 0 0 1 4-4h12"/><path d="M7 22l-3-3 3-3"/><path d="M20 13v2a4 4 0 0 1-4 4H4"/></svg></span><span>Suscripciones</span></button><button type="button" class="acc" data-accion="resumen"><span class="acc-i" style="--c:#FF9F0A"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.2 6.3L20.5 10l-6.3 2.2L12 18.5l-2.2-6.3L3.5 10l6.3-1.7z"/></svg></span><span>Mi mes</span></button></section>
+    <section class="block" id="insightsBox"></section>
     <section class="hero" aria-labelledby="heroLbl">
       <p class="eyebrow" id="heroLbl">Te queda este mes (estimado)</p>
       <div class="big num" id="dispo">—</div>
@@ -113,7 +116,7 @@
       <button id="addAcct">+ Agregar cuenta de ahorro</button>
     </section>
     <section class="block">
-      <div class="row-head"><h2>Tarjetas de crédito</h2></div>
+      <div class="row-head"><h2>Tarjetas de crédito</h2><button type="button" class="ghost" data-accion="plan">Plan de pago</button></div>
       <div id="cardsList" class="stack"></div>
       <button id="addCard">+ Agregar tarjeta o crédito</button>
     </section>
@@ -143,6 +146,7 @@
 
   <!-- MÁS -->
   <main id="v-mas" class="view" hidden>
+    <button type="button" class="pro-promo" data-accion="pro"><span class="acc-i" style="--c:#5E5CE6"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.2 6.3L20.5 10l-6.3 2.2L12 18.5l-2.2-6.3L3.5 10l6.3-1.7z"/></svg></span><span class="pp-t"><b>Luca Pro</b><span>Anillos, plan de pago, reparto de quincena y más</span></span><span class="pro-badge">PRO</span></button>
     <section class="block">
       <h2>Tu cuenta</h2>
       <div class="panel" id="cuentaPanel"></div>
@@ -250,6 +254,7 @@
 <script src="i18n.js"></script>
 <script src="app.js"></script>
 <script src="extras.js"></script>
+<script src="pro.js"></script>
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));</script>
 </body>
 </html>

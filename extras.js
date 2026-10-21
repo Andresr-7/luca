@@ -563,7 +563,8 @@ renderIdioma();
 
 /* ---------- Todo junto ---------- */
 let avisoTimer=null;
-function renderExtras(){
+function renderExtras(T){
+  if(typeof renderPro==="function"&&T)renderPro(T);
   renderAviso();renderLibre();renderRapidos();renderWrapPromo();renderLibreDeuda();renderRapList();renderAvisosPanel();
   clearTimeout(avisoTimer);avisoTimer=setTimeout(()=>{if(user){guardarAvisosSW();notificarHoy()}},1500);
 }
