@@ -682,3 +682,21 @@ html.privado .libre .sub,html.privado .rc-note,html.privado .ins-d,html.privado 
 .otp.err{animation:otpShake .45s cubic-bezier(.36,.07,.19,.97)}
 @keyframes otpShake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
 @media (prefers-reduced-motion:reduce){.otp.err,.otp.busy .otp-seal rect,.otp .slot.cur::after{animation:none}}
+
+/* ---------- v2.3.1: campos con animación (misma familia que el código) ---------- */
+@property --lap{syntax:"<angle>";inherits:false;initial-value:0deg}
+input:not([type=range]):not([type=checkbox]):not([type=radio]):not(.code-in),select,textarea{border:1.5px solid transparent;caret-color:var(--primary);
+  transition:border-color .2s ease,box-shadow .3s var(--spring,cubic-bezier(.3,1.3,.5,1)),background-color .2s ease,transform .3s var(--spring,cubic-bezier(.3,1.3,.5,1))}
+input:not([type=range]):not([type=checkbox]):not([type=radio]):not(.code-in):focus,select:focus,textarea:focus{outline:none;border-color:var(--primary);background:var(--surface);
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--primary) 18%,transparent);transform:translateY(-1px)}
+input.bad,select.bad,textarea.bad,input[aria-invalid="true"]{border-color:var(--sys-red,#FF2D55)!important;box-shadow:0 0 0 4px color-mix(in srgb,var(--sys-red,#FF2D55) 16%,transparent)!important}
+input.shake,select.shake,textarea.shake{animation:campoShake .42s cubic-bezier(.36,.07,.19,.97)}
+@keyframes campoShake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+/* Botón ocupado: una línea le da la vuelta al borde, como el sello del código */
+button.lap{position:relative;isolation:isolate}
+button.lap::after{content:"";position:absolute;inset:-3px;border-radius:inherit;padding:2px;pointer-events:none;
+  background:conic-gradient(from var(--lap),transparent 0 70%,var(--primary) 85%,transparent 100%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:btnLap 1.1s linear infinite}
+button.primary.lap::after{background:conic-gradient(from var(--lap),transparent 0 70%,color-mix(in srgb,var(--primary) 60%,#fff) 85%,transparent 100%)}
+@keyframes btnLap{to{--lap:360deg}}
+@media (prefers-reduced-motion:reduce){input,select,textarea{transition:none!important;transform:none!important}input.shake,select.shake,textarea.shake,button.lap::after{animation:none}}

@@ -152,7 +152,7 @@ const ASVG='<svg aria-hidden="true" width="18" height="20" viewBox="0 0 17 20" f
 const redirectURL=()=>location.origin+location.pathname;
 const MAIL_RE=/^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 let authEmail="",pendingRecovery=false,recoveryInForm=false,resendTimer=null;
-function authMsg(t,ok){const m=$("#authMsg");m.textContent=t||"";m.hidden=!t;m.classList.toggle("ok",!!ok)}
+function authMsg(t,ok){const m=$("#authMsg");m.textContent=t||"";m.hidden=!t;m.classList.toggle("ok",!!ok);if(t&&!ok)setTimeout(()=>window.sacudir&&sacudir(document.activeElement),0)}
 function authErr(error){
   const m=(error&&error.message)||"";
   if(/already|registered|exists/i.test(m))return "Ese correo ya tiene cuenta. Entra con tu contraseña o con un código.";
@@ -185,7 +185,7 @@ function otpFallo(){const w=$("#otpDeck"),i=$("#aCode");if(!w){i&&i.select();ret
   w.classList.add("err");vibrar([20,40,20]);setTimeout(()=>{i.value="";i.dispatchEvent(new Event("input"));w.classList.remove("err");i.focus()},650)}
 function otpOk(){const w=$("#otpDeck");if(w){w.classList.remove("busy");w.classList.add("ok");vibrar(15)}}
 const codeField=()=>`<label>Código del correo<input id="aCode" name="code" class="code-in num" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="••••••" spellcheck="false"></label>`;
-function busy(b,t){const old=b.textContent;b.disabled=true;b.textContent=t;return()=>{b.disabled=false;b.textContent=old}}
+function busy(b,t){const old=b.textContent;b.disabled=true;b.textContent=t;b.classList.add("lap");return()=>{b.disabled=false;b.textContent=old;b.classList.remove("lap")}}
 function startResend(fn){
   const b=$("#aResend");if(!b)return;let n=60;clearInterval(resendTimer);
   const tick=()=>{if(!b.isConnected){clearInterval(resendTimer);return}if(n<=0){b.disabled=false;b.textContent="Reenviar código";clearInterval(resendTimer);return}b.disabled=true;b.textContent="Reenviar en "+n+" s";n--};
@@ -622,7 +622,7 @@ const vibrar=(ms=8)=>{try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}};
 $("#sheetClose").onclick=closeSheet;
 $("#sheetBack").addEventListener("click",e=>{if(e.target.id==="sheetBack")closeSheet()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#sheetBack").hidden)closeSheet()});
-function toast(m,act){const t=$("#toast");t.textContent="";const sp=document.createElement("span");sp.textContent=m;t.appendChild(sp);
+function toast(m,act){if(/^(Escribe|Pon |Elige|Falta)/.test(m))setTimeout(()=>{const s=document.querySelector("#sheetBack:not([hidden]) #sheetBody");const f=document.activeElement&&document.activeElement.matches("input,select,textarea")?document.activeElement:s&&[...s.querySelectorAll("input:not([type=checkbox]),select")].find(i=>!i.value);window.sacudir&&sacudir(f)},0);const t=$("#toast");t.textContent="";const sp=document.createElement("span");sp.textContent=m;t.appendChild(sp);
   if(act){const b=document.createElement("button");b.type="button";b.className="toast-act";b.textContent=act.label;b.onclick=()=>{t.hidden=true;act.fn()};t.appendChild(b)}
   t.classList.toggle("has-act",!!act);t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,act?5500:2400)}
 function confirmBtn(btn,fn,txt){let armed=false;btn.onclick=()=>{if(!armed){armed=true;btn.textContent=txt||"Toca otra vez para confirmar";return}fn()}}
@@ -927,7 +927,7 @@ $("#fCat").onsubmit=async e=>{e.preventDefault();const n=$("#catNom").value.trim
 document.querySelectorAll("#app input").forEach(i=>i.setAttribute("autocomplete","off"));
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(f)leerRespaldo(f);e.target.value=""});
 /* ---------- Tu cuenta ---------- */
-const APP_VERSION="2.3.1";
+const APP_VERSION="2.3.2";
 const REPO_URL="https://github.com/Andresr-7/luca";
 const SOPORTE="luca.app.col@gmail.com";
 function nombreUsuario(){

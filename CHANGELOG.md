@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.2 — 2026-10-21
+- Sign-in code now 8 digits (configurable with `OTP_LEN` in `config.js`); tighter card fan that stays on screen.
+- Every text field and select shares the code input's motion: focus halo and lift, a small pop while typing, red shake and haptic on validation errors.
+- Busy buttons show a light that laps the border (same "seal" as the code input).
+
 ## 2.3.0 — 2026-10-21
 - New sign-in code input: six "card" slots that fan out like a hand of cards while verifying (one rotation around a pivot below the row), a progress seal that laps the edge, green on success, shake and auto-clear on a wrong code. Auto-submits on the 6th digit; paste and iOS/Android one-time-code autofill still work (single real input underneath). Respects reduced motion.
 
