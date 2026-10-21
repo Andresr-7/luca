@@ -13,7 +13,7 @@ window.CONFIG = {
   PAGOS: { activo: false, checkoutUrl: "" },
   // Precio mensual de Luca Pro que se muestra en la app (COP).
   OTP_LEN: 8,          // dígitos del código que llega al correo (Supabase → Auth → Email OTP length)
-  PRECIO_PRO: 9900,
+  PRECIO_PRO: 15900,
 
   // Límites por plan. null = sin límite. Ejemplo para el futuro: free: { tarjetas: 3, cuentas: 2, metas: 1 }
   PLANES: {

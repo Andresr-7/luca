@@ -188,7 +188,7 @@ function proSheet(){
   const f=[["anillo","#FF2D55","Anillos del día","Mira de un vistazo cómo vas hoy, en el mes y con tus tarjetas."],["fuego","#FF9F0A","Racha","Suma días sin pasarte de lo que te toca y no la rompas."],["chispa","#5E5CE6","Luca te cuenta","Gasto hormiga, tu día más caro y cómo cierras el mes."],["plan","#30D158","Plan de pago inteligente","Cuánto pagarle a cada tarjeta para pagar menos intereses."],["reparto","#0A84FF","Reparto de quincena","Reparte tu pago entre fijos, tarjetas, ahorro y gasto diario."],["repetir","#BF5AF2","Cazador de suscripciones","Encuentra lo que te cobran cada mes y cuánto suma al año."],["ojoNo","#8E8E93","Modo privado","Oculta tus montos con un toque cuando estés en público."]];
   openSheet("Luca Pro",`<div class="stack"><div class="pro-hero">${tile("chispa","#5E5CE6")}<h3>Tu plata, en modo experto</h3><p class="muted">Gratis mientras Luca está en lanzamiento.</p></div>
     <div class="ios-list">${f.map(([i,c,t,d])=>`<div class="ios-row pro-f">${tile(i,c)}<span><b>${t}</b><small>${d}</small></span></div>`).join("")}</div>
-    <p class="hint">Cuando lleguen los pagos, Luca Pro costará ${fmt((window.CONFIG&&CONFIG.PRECIO_PRO)||9900)} al mes. Te avisaremos dentro de la app.</p></div>`);
+    <p class="hint">Cuando lleguen los pagos, Luca Pro costará ${fmt((window.CONFIG&&CONFIG.PRECIO_PRO)||15900)} al mes. Te avisaremos dentro de la app.</p></div>`);
 }
 function aplicarPrivado(on){document.documentElement.classList.toggle("privado",on);try{localStorage.setItem("luca-privado",on?"1":"")}catch(e){}
   const b=$("#btnPriv");if(b){b.innerHTML=on?PRO_ICO.ojoNo:PRO_ICO.ojo;b.setAttribute("aria-label",on?"Mostrar montos":"Ocultar montos");b.setAttribute("aria-pressed",on)}}
