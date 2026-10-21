@@ -664,9 +664,9 @@ html.privado .libre .sub,html.privado .rc-note,html.privado .ins-d,html.privado 
 #lockScreen .primary{min-width:220px;margin-top:8px}
 
 /* ---------- v2.3: código de verificación tipo baraja ---------- */
-.otp{position:relative;display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:8px;padding:2px;border-radius:18px}
-.otp .slot{position:relative;aspect-ratio:3/4;max-height:64px;display:grid;place-items:center;border-radius:14px;background:var(--surface-2);border:1.5px solid var(--sep,rgba(128,128,128,.25));transform-origin:50% 320%;transition:border-color .2s,background-color .2s,box-shadow .2s;will-change:transform}
-.otp .slot b{font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink)}
+.otp{position:relative;display:grid;grid-template-columns:repeat(var(--n,6),1fr);gap:clamp(4px,1.6vw,8px);margin-top:8px;padding:2px;border-radius:18px}
+.otp .slot{position:relative;aspect-ratio:3/4;max-height:64px;display:grid;place-items:center;border-radius:12px;background:var(--surface-2);border:1.5px solid var(--sep,rgba(128,128,128,.25));transform-origin:50% 320%;transition:border-color .2s,background-color .2s,box-shadow .2s;will-change:transform}
+.otp .slot b{font-size:clamp(18px,5.6vw,26px);font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink)}
 .otp .slot.on{background:var(--surface);border-color:color-mix(in srgb,var(--primary) 45%,transparent)}
 .otp .slot.cur{border-color:var(--primary);box-shadow:0 0 0 4px color-mix(in srgb,var(--primary) 18%,transparent)}
 .otp .slot.cur:not(.on)::after{content:"";width:2px;height:40%;border-radius:2px;background:var(--primary);animation:otpCaret 1s steps(2,start) infinite}

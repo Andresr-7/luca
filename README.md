@@ -33,7 +33,7 @@ I built Luca to answer that question for my own finances, then turned it into a 
 | UI | Vanilla HTML, CSS and JavaScript (no framework, no build step) | Fast on low-end Android phones, ~50 KB of app code, trivial to deploy |
 | Design | Custom iOS-style design system (tokens, grouped lists, sheets, spring animations), Inter + SF | Feels native when installed |
 | Data & auth | **Supabase** (PostgreSQL, Row Level Security, Auth, Realtime) | Real relational database with per-user security and live sync across devices |
-| Email | Brevo SMTP for 6-digit sign-in / recovery codes | Free tier, custom templates |
+| Email | Brevo SMTP for 8-digit sign-in / recovery codes | Free tier, custom templates |
 | Hosting | GitHub Pages + Service Worker (offline-first PWA) | Free, HTTPS, installable |
 | Android | Trusted Web Activity built with Bubblewrap/PWABuilder, Digital Asset Links | Same codebase ships to Google Play |
 | Security | CSP, RLS, WebAuthn, CodeQL, Dependabot | Defense in depth, see SECURITY.md |

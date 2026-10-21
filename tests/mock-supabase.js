@@ -18,7 +18,7 @@
       signInWithOtp:async({email})=>{__mock.calls.push(["otp",email]);if(!store.users[email])return err("Signups not allowed for otp");return{data:{},error:null}},
       resend:async({type,email})=>{__mock.calls.push(["resend",type,email]);return{data:{},error:null}},
       resetPasswordForEmail:async(email)=>{__mock.calls.push(["reset",email]);return{data:{},error:null}},
-      verifyOtp:async({email,token,type})=>{__mock.calls.push(["verify",type]);if(token!=="123456")return err("Token has expired or is invalid");const u=store.users[email];if(!u)return err("Token has expired or is invalid");u.confirmed=true;save();login(u);if(type==="recovery")emit("PASSWORD_RECOVERY");return{data:{session},error:null}},
+      verifyOtp:async({email,token,type})=>{__mock.calls.push(["verify",type]);if(token!=="12345678")return err("Token has expired or is invalid");const u=store.users[email];if(!u)return err("Token has expired or is invalid");u.confirmed=true;save();login(u);if(type==="recovery")emit("PASSWORD_RECOVERY");return{data:{session},error:null}},
       updateUser:async({password})=>{const u=Object.values(store.users).find(x=>x.id===session.user.id);u.password=password;save();__mock.calls.push(["updateUser"]);return{data:{},error:null}},
       signInWithOAuth:async({provider})=>{__mock.calls.push(["oauth",provider]);return{error:null}},
       signOut:async()=>{session=null;localStorage.removeItem("__mocksess");emit("SIGNED_OUT");return{error:null}}

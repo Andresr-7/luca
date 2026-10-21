@@ -21,7 +21,7 @@ Email **luca.app.col@gmail.com** with the subject `SECURITY`. Please do not open
 | Shared computer | Data left in the browser after logout | Logout wipes the local cache, session token and lock credential |
 | Database abuse | A modified client floods the free tier | Collection allow-list, 64-char ids, 16 KB per document, 20,000 rows per user (DB constraints and trigger) |
 | Malicious backup file | A crafted JSON import | 5 MB limit, prototype-pollution keys stripped, per-record size and id checks, row cap |
-| Account takeover | Weak passwords, brute force | 8+ character passwords, 6-digit email codes with expiry, Supabase Auth rate limits |
+| Account takeover | Weak passwords, brute force | 8+ character passwords, 8-digit email codes with expiry, Supabase Auth rate limits |
 
 ## Controls by layer
 

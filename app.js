@@ -167,24 +167,24 @@ function authErr(error){
 }
 const pwField=(id,label,auto,ph)=>`<label>${label}<span class="pw"><input id="${id}" name="${id}" type="password" autocomplete="${auto}" placeholder="${ph}"><button type="button" class="pw-eye" data-eye="${id}" aria-label="Mostrar contraseña">Ver</button></span></label>`;
 /* Código en 6 casillas tipo baraja: un solo input real (autocompletar y pegar funcionan), casillas visuales encima. */
-const OTP_ANG=[-15,-9,-3,3,9,15],OTP_DX=[-14,-8,-3,3,8,14],otpQuieto=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
-function otpDeck(){const i=$("#aCode");if(!i||i.dataset.deck)return;i.dataset.deck="1";i.maxLength=6;i.removeAttribute("placeholder");
-  const w=document.createElement("div");w.className="otp";w.id="otpDeck";
+const OTP_LEN=(window.CONFIG&&CONFIG.OTP_LEN)||8,OTP_C=(OTP_LEN-1)/2,OTP_ANG=Array.from({length:OTP_LEN},(_,k)=>+((k-OTP_C)*30/OTP_LEN).toFixed(1)),OTP_DX=OTP_ANG.map(a=>-Math.round(a*3.2)),otpQuieto=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
+function otpDeck(){const i=$("#aCode");if(!i||i.dataset.deck)return;i.dataset.deck="1";i.maxLength=OTP_LEN;i.removeAttribute("placeholder");
+  const w=document.createElement("div");w.className="otp";w.id="otpDeck";w.style.setProperty("--n",OTP_LEN);
   w.innerHTML=OTP_ANG.map(()=>'<span class="slot"><b></b></span>').join("")+'<svg class="otp-seal" aria-hidden="true" preserveAspectRatio="none"><rect x="1" y="1" rx="16" ry="16" pathLength="1"/></svg>';
   i.parentNode.insertBefore(w,i);w.appendChild(i);
   const sl=[...w.querySelectorAll(".slot")],f=$("#fAuth"),conPass=!!$("#aPass");
-  const pinta=()=>{const v=i.value.replace(/\D/g,"").slice(0,6);if(v!==i.value)i.value=v;const foco=document.activeElement===i;
+  const pinta=()=>{const v=i.value.replace(/\D/g,"").slice(0,OTP_LEN);if(v!==i.value)i.value=v;const foco=document.activeElement===i;
     sl.forEach((s,k)=>{const d=v[k]||"",b=s.firstChild;if(b.textContent!==d){b.textContent=d;if(d&&!otpQuieto()&&s.animate)s.animate([{transform:"translateY(8px) scale(.9)",opacity:.4},{transform:"none",opacity:1}],{duration:320,easing:"cubic-bezier(.3,1.5,.5,1)"})}
-      s.classList.toggle("on",!!d);s.classList.toggle("cur",foco&&k===Math.min(v.length,5))});
-    if(v.length===6&&!conPass&&!w.classList.contains("busy")&&f){vibrar(10);f.requestSubmit()}};
+      s.classList.toggle("on",!!d);s.classList.toggle("cur",foco&&k===Math.min(v.length,OTP_LEN-1))});
+    if(v.length===OTP_LEN&&!conPass&&!w.classList.contains("busy")&&f){vibrar(10);f.requestSubmit()}};
   ["input","focus","blur"].forEach(ev=>i.addEventListener(ev,pinta));
-  f&&f.addEventListener("submit",()=>{if(i.value.length===6)otpAbanico(true)});pinta()}
+  f&&f.addEventListener("submit",()=>{if(i.value.length===OTP_LEN)otpAbanico(true)});pinta()}
 function otpAbanico(on){const w=$("#otpDeck");if(!w)return;w.classList.toggle("busy",on);w.classList.remove("err","ok");
   if(otpQuieto())return;[...w.querySelectorAll(".slot")].forEach((s,k)=>s.animate&&s.animate([{transform:"none"},{transform:`translate(${OTP_DX[k]}px,-6px) rotate(${OTP_ANG[k]}deg)`}],{duration:560,delay:k*45,easing:"cubic-bezier(.3,1.3,.5,1)",fill:"forwards",direction:on?"normal":"reverse"}))}
 function otpFallo(){const w=$("#otpDeck"),i=$("#aCode");if(!w){i&&i.select();return}otpAbanico(false);w.getAnimations&&w.querySelectorAll(".slot").forEach(s=>s.getAnimations().forEach(a=>a.cancel()));
   w.classList.add("err");vibrar([20,40,20]);setTimeout(()=>{i.value="";i.dispatchEvent(new Event("input"));w.classList.remove("err");i.focus()},650)}
 function otpOk(){const w=$("#otpDeck");if(w){w.classList.remove("busy");w.classList.add("ok");vibrar(15)}}
-const codeField=()=>`<label>Código de 6 dígitos<input id="aCode" name="code" class="code-in num" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="••••••" spellcheck="false"></label>`;
+const codeField=()=>`<label>Código del correo<input id="aCode" name="code" class="code-in num" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="••••••" spellcheck="false"></label>`;
 function busy(b,t){const old=b.textContent;b.disabled=true;b.textContent=t;return()=>{b.disabled=false;b.textContent=old}}
 function startResend(fn){
   const b=$("#aResend");if(!b)return;let n=60;clearInterval(resendTimer);
@@ -242,7 +242,7 @@ function renderAuth(paso,email){
     setTimeout(()=>{otpDeck();$("#aCode")&&$("#aCode").focus()},60);
     startResend(()=>verif?sb.auth.resend({type:"signup",email:authEmail}):sb.auth.signInWithOtp({email:authEmail,options:{shouldCreateUser:false,emailRedirectTo:redirectURL()}}));
     $("#fAuth").onsubmit=async e=>{e.preventDefault();const token=$("#aCode").value.replace(/\D/g,"");
-      if(token.length<6){authMsg("Escribe el código completo que te llegó al correo.");$("#aCode").focus();return}
+      if(token.length<OTP_LEN){authMsg("Escribe el código completo que te llegó al correo.");$("#aCode").focus();return}
       const done=busy(e.submitter||$("#fAuth .primary"),"Verificando…");
       let r=await sb.auth.verifyOtp({email:authEmail,token,type:"email"});
       if(r.error&&verif)r=await sb.auth.verifyOtp({email:authEmail,token,type:"signup"});
@@ -270,7 +270,7 @@ function renderAuth(paso,email){
     setTimeout(()=>{otpDeck();$("#aCode")&&$("#aCode").focus()},60);
     startResend(()=>sb.auth.resetPasswordForEmail(authEmail,{redirectTo:redirectURL()}));
     $("#fAuth").onsubmit=async e=>{e.preventDefault();const token=$("#aCode").value.replace(/\D/g,""),password=$("#aPass").value;
-      if(token.length<6){authMsg("Escribe el código completo que te llegó al correo.");$("#aCode").focus();return}
+      if(token.length<OTP_LEN){authMsg("Escribe el código completo que te llegó al correo.");$("#aCode").focus();return}
       if(password.length<8){authMsg("La contraseña nueva debe tener al menos 8 caracteres.");$("#aPass").focus();return}
       const done=busy(e.submitter||$("#fAuth .primary"),"Guardando…");
       recoveryInForm=true;const v=await sb.auth.verifyOtp({email:authEmail,token,type:"recovery"});
@@ -927,7 +927,7 @@ $("#fCat").onsubmit=async e=>{e.preventDefault();const n=$("#catNom").value.trim
 document.querySelectorAll("#app input").forEach(i=>i.setAttribute("autocomplete","off"));
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(f)leerRespaldo(f);e.target.value=""});
 /* ---------- Tu cuenta ---------- */
-const APP_VERSION="2.3.0";
+const APP_VERSION="2.3.1";
 const REPO_URL="https://github.com/Andresr-7/luca";
 const SOPORTE="luca.app.col@gmail.com";
 function nombreUsuario(){
