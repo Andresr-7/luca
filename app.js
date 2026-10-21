@@ -1,10 +1,11 @@
 "use strict";
 /* Luca — app de finanzas personales. Datos en Supabase (una fila por registro, protegidas por usuario). */
 const DEF_CATS=["Comida","Transporte","Salidas","Ropa","Hogar","Suscripciones","Juegos","Salud","Otros"];
-const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-const DIAS=["dom","lun","mar","mié","jue","vie","sáb"];
+const MESES=LANG==="en"?["January","February","March","April","May","June","July","August","September","October","November","December"]:["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+const DIAS=LANG==="en"?["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]:["dom","lun","mar","mié","jue","vie","sáb"];
+const DIAS_L=LANG==="en"?["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]:["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
 const $=s=>document.querySelector(s);
-const fmt=n=>"$ "+Math.round(n||0).toLocaleString("es-CO");
+const fmt=n=>"$\u00a0"+Math.round(n||0).toLocaleString("es-CO");
 const parse=v=>{const d=String(v??"").replace(/[^\d]/g,"");return d?parseInt(d,10):null};
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
@@ -13,7 +14,7 @@ const monthKey=d=>String(d||"").slice(0,7);
 const midnight=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
 const fechaCorta=f=>{if(!f)return"";const[y,m,d]=f.split("-");return +d+" "+MESES[+m-1].slice(0,3).toLowerCase()};
 const dLabel=d=>DIAS[d.getDay()]+" "+d.getDate()+" "+MESES[d.getMonth()].slice(0,3).toLowerCase();
-const fmtU=n=>"US$ "+(Number(n)||0).toLocaleString("es-CO",{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtU=n=>"US$\u00a0"+(Number(n)||0).toLocaleString("es-CO",{minimumFractionDigits:2,maximumFractionDigits:2});
 function parseU(v){let s=String(v??"").replace(/[^\d.,]/g,"");if(!s)return null;
   if(s.includes(",")){s=s.replace(/\./g,"").replace(",",".")}
   else{const p=s.split(".");if(p.length>2||(p.length===2&&p[1].length===3))s=p.join("")}
@@ -366,6 +367,7 @@ function render(){
   const d=new Date();const nom=user?nombreUsuario():"";$("#monthLabel").textContent=(nom?"Hola, "+nom+" · ":"")+MESES[d.getMonth()]+" "+d.getFullYear();
   const T=totals(),a=S.ajustes;
   renderResumen(T,a);renderAgenda();renderTarjetas();renderMovs();renderMas(a);renderCuenta();renderPlan();
+  if(typeof renderExtras==="function")renderExtras(T);
 }
 function renderResumen(T,a){
   let disp=null;
@@ -528,6 +530,7 @@ function renderTarjetas(){
         <div><span class="k">Mínimo total en COP</span><span class="val num">${minNA(t)?'<span class="na">Aún no disponible</span>':fmt(minTotal(t))}</span></div>
         <div style="grid-column:1/-1"><span class="hint">Dólares convertidos a ${fmt(trm())} (${rateName()})</span></div></div>`:""}
       ${t.cupo?(()=>{const u=deudaCopCard(t),p=u/t.cupo*100;return `<div class="stack" style="gap:6px"><div class="small muted">Cupo ${fmt(t.cupo)} · usado <b style="color:${p>=90?"var(--danger)":"var(--ink)"}">${Math.round(p)}%</b> (${fmt(u)}${t.usd&&t.saldoUsd?", incluye dólares":""}) · disponible ${fmt(Math.max(0,t.cupo-u))}</div><div class="meter"><i style="width:${Math.min(100,p)}%;${p>=90?"background:var(--danger)":""}"></i></div></div>`})():""}
+      ${typeof payoffCard==="function"?payoffCard(t):""}
       <div class="actions"><button class="primary" data-pay="${esc(t.id)}">Registrar pago</button><button data-edit="${esc(t.id)}">Editar</button></div>
     </article>`}).join(""):'<div class="empty">Aún no hay tarjetas. Agrega la primera con el botón de abajo.</div>';
 }
@@ -576,28 +579,33 @@ function closeSheet(){$("#sheetBack").hidden=true;$("#sheetBody").innerHTML=""}
 $("#sheetClose").onclick=closeSheet;
 $("#sheetBack").addEventListener("click",e=>{if(e.target.id==="sheetBack")closeSheet()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#sheetBack").hidden)closeSheet()});
-function toast(m){const t=$("#toast");t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2400)}
+function toast(m,act){const t=$("#toast");t.textContent="";const sp=document.createElement("span");sp.textContent=m;t.appendChild(sp);
+  if(act){const b=document.createElement("button");b.type="button";b.className="toast-act";b.textContent=act.label;b.onclick=()=>{t.hidden=true;act.fn()};t.appendChild(b)}
+  t.classList.toggle("has-act",!!act);t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,act?5500:2400)}
 function confirmBtn(btn,fn,txt){let armed=false;btn.onclick=()=>{if(!armed){armed=true;btn.textContent=txt||"Toca otra vez para confirmar";return}fn()}}
 
-function gastoSheet(g){
-  const isNew=!g;g=g||{valor:null,categoria:cats()[0],nota:"",fecha:today(),medio:"Efectivo"};
+function gastoSheet(g,pre){
+  const isNew=!g;g=g||{valor:null,categoria:cats()[0],nota:"",fecha:today(),medio:"Efectivo",...(pre||{})};
   let cat=g.categoria, cur=g.valorUsd!=null?"usd":"cop";
   const opts=[{k:"efectivo",l:"Efectivo"},...S.cuentas.map(c=>({k:"c:"+c.id,l:c.nombre+" (cuenta)"})),...(S.cuentas.length?[]:[{k:"debito",l:"Débito / Nequi"}]),...S.tarjetas.map(t=>({k:"t:"+t.id,l:t.nombre}))];
   let sel=g.cuentaId?"c:"+g.cuentaId:g.tarjetaId?"t:"+g.tarjetaId:g.medio==="Débito / Nequi"?"debito":"efectivo";
   if(!opts.some(o=>o.k===sel))opts.push({k:sel,l:g.medio||"Otro"});
-  if(isNew&&S.cuentas.length&&sel==="efectivo"){const last=S.gastos.slice().sort((a,b)=>(b.creado||0)-(a.creado||0))[0];if(last&&last.cuentaId&&S.cuentas.some(c=>c.id===last.cuentaId))sel="c:"+last.cuentaId}
+  if(pre&&pre.medioKey)sel=pre.medioKey;
+  else if(isNew&&S.cuentas.length&&sel==="efectivo"){const last=S.gastos.slice().sort((a,b)=>(b.creado||0)-(a.creado||0))[0];if(last&&last.cuentaId&&S.cuentas.some(c=>c.id===last.cuentaId))sel="c:"+last.cuentaId}
   const cs=cats().includes(cat)?cats():[...cats(),cat];
   const key=()=>$("#gMedio").value;
   const card=()=>{const k=key();return k.startsWith("t:")?S.tarjetas.find(x=>x.id===k.slice(2)):null};
   const acct=()=>{const k=key();return k.startsWith("c:")?S.cuentas.find(x=>x.id===k.slice(2)):null};
   openSheet(isNew?"Nuevo gasto":"Editar gasto",`<form id="fg">
+    ${isNew?`<label>Escríbelo como hablas<input id="gTexto" placeholder="Ej. almuerzo 18 mil nequi" autocomplete="off" spellcheck="false"><span class="hint">Luca llena los campos por ti. Revisa y guarda.</span></label>`:""}
     <label>Pagado con<select id="gMedio">${opts.map(o=>`<option value="${esc(o.k)}" ${o.k===sel?"selected":""}>${esc(o.l)}</option>`).join("")}</select></label>
     <div class="cats seg" id="gCur" hidden><button type="button" data-cur="cop">En pesos (COP)</button><button type="button" data-cur="usd">En dólares (US$)</button></div>
     <label><span id="gValLbl">¿Cuánto?</span><input id="gVal" class="money num" autocomplete="off"><span class="hint" id="gConv" hidden></span></label>
     <div><div class="eyebrow" style="margin-bottom:6px">Categoría</div><div class="cats" id="gCats">${cs.map(c=>`<button type="button" aria-pressed="${c===cat}" data-c="${esc(c)}">${esc(c)}</button>`).join("")}</div></div>
     <label>Nota (opcional)<input id="gNota" placeholder="Ej. almuerzo, Uber, Netflix" value="${esc(g.nota)}"></label>
     <label>Fecha<input id="gFecha" type="date" value="${esc(g.fecha||today())}"></label>
-    ${isNew?`<label class="check" id="gSumWrap" hidden><input type="checkbox" id="gSum" checked> <span id="gSumLbl">Sumar a la deuda de la tarjeta</span></label>`:""}
+    ${isNew?`<label class="check" id="gSumWrap" hidden><input type="checkbox" id="gSum" checked> <span id="gSumLbl">Sumar a la deuda de la tarjeta</span></label>
+    <label class="check"><input type="checkbox" id="gRap"> <span>Guardar como gasto rápido</span></label>`:""}
     <p class="hint" id="gHint" style="margin:0" hidden></p>
     <button class="primary" type="submit">${isNew?"Guardar gasto":"Guardar cambios"}</button>
     ${isNew?"":'<button type="button" class="danger" id="gDel">Borrar este gasto</button>'}</form>`,()=>{
@@ -618,6 +626,11 @@ function gastoSheet(g){
       if(!usdOk&&cur==="usd")setCur("cop");else syncSum()};
     if(g.valorUsd!=null){inp.value=fmtU(g.valorUsd)}else if(g.valor){inp.value=fmt(g.valor)}
     setCur(cur,true);syncMedio();
+    const pickCat=c=>{if(!c)return;if(!$("#gCats").querySelector(`[data-c="${CSS.escape(c)}"]`))return;cat=c;$("#gCats").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.c===c))};
+    $("#gTexto")&&$("#gTexto").addEventListener("input",()=>{const r=typeof interpretarGasto==="function"&&interpretarGasto($("#gTexto").value);if(!r)return;
+      if(r.medioKey&&opts.some(o=>o.k===r.medioKey)){$("#gMedio").value=r.medioKey;syncMedio()}
+      const t=card();if(r.valorUsd!=null&&t&&t.usd){if(cur!=="usd")setCur("usd");inp.value=fmtU(r.valorUsd);conv()}else if(r.valor){if(cur!=="cop")setCur("cop");inp.value=fmt(r.valor)}
+      pickCat(r.categoria);$("#gNota").value=r.nota||"";$("#gFecha").value=r.fecha||today()});
     $("#gMedio").onchange=syncMedio;
     $("#gCur").onclick=e=>{const b=e.target.closest("button");if(b&&b.dataset.cur!==cur)setCur(b.dataset.cur)};
     $("#gCats").onclick=e=>{const b=e.target.closest("button");if(!b)return;cat=b.dataset.c;$("#gCats").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b))};
@@ -629,6 +642,8 @@ function gastoSheet(g){
       const data={valor:v,valorUsd:usd?u:null,categoria:cat,nota:$("#gNota").value.trim(),fecha:$("#gFecha").value||today(),
         medio:t?t.nombre:c?c.nombre:k==="debito"?"Débito / Nequi":k==="efectivo"?"Efectivo":(g.medio||"Otro"),tarjetaId:t?t.id:null,cuentaId:c?c.id:null,creado:g.creado||Date.now()};
       const sumar=isNew&&t&&$("#gSum")&&$("#gSum").checked;
+      if(sumar)data.sumado=usd?{usd:u}:{cop:v};
+      if(isNew&&$("#gRap")&&$("#gRap").checked&&typeof guardarRapido==="function")guardarRapido({nota:data.nota,valor:v,valorUsd:data.valorUsd,categoria:cat,medioKey:k});
       closeSheet();
       if(!isNew)await undoRef(id);
       await put("gastos",id,data);
@@ -729,6 +744,7 @@ function cardSheet(t){
     <label>Día de corte<input id="cCorte" type="number" min="1" max="31" inputmode="numeric" placeholder="Opcional" value="${t.corte??""}"></label></div>
     <p class="hint" style="margin:0">Los dos días están en tu extracto o en la app del banco. El de corte es opcional.</p>
     <label>Cupo total (opcional)<input id="cCupo" class="num" inputmode="numeric" placeholder="$ 0" value="${t.cupo?fmt(t.cupo):""}"></label>
+    <label>Interés mensual % (opcional)<input id="cInt" inputmode="decimal" placeholder="Ej. 1,9" value="${t.interes!=null?String(t.interes).replace(".",","):""}"><span class="hint">Está en tu extracto como tasa mes vencido (MV). Si lo dejas vacío, Luca usa 2% para estimar cuándo terminas de pagar.</span></label>
     <button class="primary" type="submit">Guardar</button>
     ${isNew?"":'<button type="button" class="danger" id="cDel">Eliminar esta tarjeta</button>'}
   </form>`,()=>{
@@ -742,7 +758,8 @@ function cardSheet(t){
     $("#fc").onsubmit=async e=>{e.preventDefault();const nombre=$("#cNom").value.trim();if(!nombre){toast("Ponle un nombre");return}
       const usd=$("#cUsd").checked;
       const data={...(isNew?{}:strip(t)),nombre,saldo:parse($("#cSal").value),minimo:$("#cNoMin").checked?null:(parse($("#cMin").value)??0),
-        usd,saldoUsd:usd?parseU($("#cSalU").value):null,minimoUsd:usd&&!$("#cNoMinU").checked?(parseU($("#cMinU").value)??0):null,dia:day("#cDia"),corte:day("#cCorte"),cupo:parse($("#cCupo").value),orden:t.orden??S.tarjetas.length};
+        usd,saldoUsd:usd?parseU($("#cSalU").value):null,minimoUsd:usd&&!$("#cNoMinU").checked?(parseU($("#cMinU").value)??0):null,dia:day("#cDia"),corte:day("#cCorte"),cupo:parse($("#cCupo").value),orden:t.orden??S.tarjetas.length,
+        interes:(()=>{const n=parseFloat(String($("#cInt").value).replace(",",".").replace(/[^\d.]/g,""));return n>0&&n<20?n:null})()};
       closeSheet();await put("tarjetas",t.id||uid(),data);toast("Tarjeta guardada")};
     if(!isNew)confirmBtn($("#cDel"),async()=>{closeSheet();await del("tarjetas",t.id);toast("Tarjeta eliminada")},"Toca otra vez para eliminar");
   });
@@ -770,20 +787,22 @@ function paySheet(t){
       if(cur==="cop"){const v=parse($("#pVal").value);if(!v){toast("Escribe cuánto pagaste");return}
         const upd={...strip(t),saldo:t.saldo!=null?Math.max(0,t.saldo-v):null,minimo:t.minimo!=null?Math.max(0,t.minimo-v):null};
         const pid=uid(),ca=pAcct();closeSheet();await put("tarjetas",t.id,upd);await put("pagos",pid,{tarjeta:t.nombre,tarjetaId:t.id,valor:v,fecha,cuentaId:ca?ca.id:null});
-        if(ca)await moveAcct(ca.id,-v,{tipo:"pago",nota:"Pago "+t.nombre,fecha,ref:pid});toast(ca?"Pago registrado y descontado de "+ca.nombre:"Pago registrado")}
+        if(ca)await moveAcct(ca.id,-v,{tipo:"pago",nota:"Pago "+t.nombre,fecha,ref:pid});toast(ca?"Pago registrado y descontado de "+ca.nombre:"Pago registrado");
+        if(t.saldo>0&&upd.saldo===0&&!(t.usd&&upd.saldoUsd>0)&&typeof celebrarDeuda==="function")celebrarDeuda(t)}
       else{const u=parseU($("#pVal").value);if(!u){toast("Escribe cuántos dólares abonaste");return}
         const cop=parse($("#pCop").value)||Math.round(u*trm());
         const r2=n=>Math.round(n*100)/100;
         const upd={...strip(t),saldoUsd:t.saldoUsd!=null?Math.max(0,r2(t.saldoUsd-u)):null,minimoUsd:t.minimoUsd!=null?Math.max(0,r2(t.minimoUsd-u)):null};
         const pid=uid(),ca=pAcct();closeSheet();await put("tarjetas",t.id,upd);await put("pagos",pid,{tarjeta:t.nombre,tarjetaId:t.id,valor:cop,valorUsd:u,fecha,cuentaId:ca?ca.id:null});
-        if(ca)await moveAcct(ca.id,-cop,{tipo:"pago",nota:"Pago "+t.nombre+" ("+fmtU(u)+")",fecha,ref:pid});toast(ca?"Pago en dólares descontado de "+ca.nombre:"Pago en dólares registrado")}};
+        if(ca)await moveAcct(ca.id,-cop,{tipo:"pago",nota:"Pago "+t.nombre+" ("+fmtU(u)+")",fecha,ref:pid});toast(ca?"Pago en dólares descontado de "+ca.nombre:"Pago en dólares registrado");
+        if(t.saldoUsd>0&&upd.saldoUsd===0&&!(upd.saldo>0)&&typeof celebrarDeuda==="function")celebrarDeuda(t)}};
   });
 }
 function ingresoSheet(){
   openSheet("Me pagaron",`<form id="fi">
     <label>¿Cuánto llegó?<input id="iVal" class="money num" inputmode="numeric" placeholder="$ 0" value="${S.ajustes.montoPago?fmt(S.ajustes.montoPago):""}"></label>
     <div class="two"><label>Fecha<input id="iFecha" type="date" value="${today()}"></label>
-    <label>Concepto<input id="iNota" value="Quincena"></label></div>
+    <label>Concepto<input id="iNota" value="${L("Quincena","Paycheck")}"></label></div>
     ${S.cuentas.length?`<label>¿A qué cuenta llegó?<select id="iCuenta">${S.cuentas.map((c,i)=>`<option value="${esc(c.id)}" ${i===0?"selected":""}>${esc(c.nombre)}</option>`).join("")}<option value="">No sumar a una cuenta</option></select></label>`:""}
     <p class="hint" style="margin:0">Si este pago llegó distinto a lo normal (horas extra, descuentos), pon el valor real. Así el cálculo del mes queda exacto.</p>
     <button class="primary" type="submit">Guardar ingreso</button></form>`,()=>{
@@ -809,15 +828,6 @@ function metaSheet(m){
     if(!isNew)confirmBtn($("#mDel"),async()=>{closeSheet();await del("metas",m.id);toast("Meta borrada")},"Toca otra vez para borrar");
   });
 }
-function abonoSheet(m){
-  openSheet("Abonar a "+m.nombre,`<form id="fab2">
-    <label>¿Cuánto guardaste?<input id="abVal" class="money num" inputmode="numeric" placeholder="$ 0"></label>
-    <button class="primary" type="submit">Abonar</button></form>`,()=>{
-    liveMoney($("#abVal"));
-    $("#fab2").onsubmit=async e=>{e.preventDefault();const v=parse($("#abVal").value);if(!v)return;closeSheet();await put("metas",m.id,{...strip(m),ahorrado:(m.ahorrado||0)+v});toast("Abono guardado")};
-  });
-}
-
 /* ---------- Eventos ---------- */
 const TITLES={resumen:"Resumen",agenda:"Agenda",tarjetas:"Cuentas y tarjetas",movs:"Movimientos",mas:"Más"};
 function go(tab){
@@ -874,7 +884,7 @@ $("#fCat").onsubmit=async e=>{e.preventDefault();const n=$("#catNom").value.trim
 document.querySelectorAll("#app input").forEach(i=>i.setAttribute("autocomplete","off"));
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(f)leerRespaldo(f);e.target.value=""});
 /* ---------- Tu cuenta ---------- */
-const APP_VERSION="1.1.0";
+const APP_VERSION="1.2.0";
 const REPO_URL="https://github.com/Andresr-7/luca";
 const SOPORTE="luca.app.col@gmail.com";
 function nombreUsuario(){
@@ -1024,4 +1034,3 @@ function maybeOnboard(){
   $("#sheetBack").hidden=false;pintar();
 }
 
-init();

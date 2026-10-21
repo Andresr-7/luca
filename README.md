@@ -6,6 +6,20 @@ App de finanzas personales para Colombia: tarjetas de crédito en pesos y dólar
 
 **Stack:** HTML + CSS + JavaScript sin frameworks · Supabase (PostgreSQL, Auth, Realtime) · PWA instalable · GitHub Pages.
 
+
+## Novedades 1.2
+
+- **Libre hasta la quincena**: cuánto puedes gastar por día hasta tu próximo pago, ya descontando lo que vence antes.
+- **¿Me alcanza?**: escribes un precio y responde en verde, amarillo o rojo según tu plata, tus pagos y tu presupuesto.
+- **Gastos rápidos**: tus gastos de siempre se guardan con un toque (con botón Deshacer).
+- **Escribe el gasto como hablas**: "almuerzo 18 mil nequi", "uber 12.500 nubank ayer", "netflix 20 usd amex".
+- **Resumen del mes animado** (tipo historias), con botón para compartir.
+- **Metas animadas** con confeti al cumplirlas (y al pagar toda una tarjeta).
+- **Avisos de pago**: aviso en el Resumen, notificaciones en el dispositivo y archivo de calendario (.ics) que avisa un día antes y el mismo día.
+- **Libre de deudas el…**: fecha estimada para cada tarjeta y para todas, con barra para ver qué pasa si pagas más.
+- **Idiomas**: español e inglés (Más → Idioma). Diccionario en `i18n-en.js`; para otro idioma se copia ese archivo.
+- **Logo en un solo lugar**: `logo/logo.svg`. Para cambiarlo: `python3 herramientas/iconos.py tu-logo.png` (ver `logo/LEEME.md`).
+
 ---
 
 ## Qué cuesta
