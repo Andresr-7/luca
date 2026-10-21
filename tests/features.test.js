@@ -78,5 +78,8 @@ const w=(p,ms=300)=>p.waitForTimeout(ms);
   T("CSP activa",await p.evaluate(()=>/script-src 'self'/.test(document.querySelector('meta[http-equiv="Content-Security-Policy"]').content)));
   T("sin scripts externos",await p.evaluate(()=>[...document.scripts].every(s=>!s.src||new URL(s.src).origin===location.origin)));
   T("salir borra caché local",await p.evaluate(()=>{localStorage.setItem("luca-cache-zz","{}");localStorage.setItem("luca-bloqueo","x");limpiarLocal();return !localStorage.getItem("luca-cache-zz")&&!localStorage.getItem("luca-bloqueo")}));
+  await p.evaluate(()=>vincSheet());await w(p,500);
+  T("cuentas vinculadas",(await p.textContent("#sheetBody")).includes("Google")&&(await p.textContent("#sheetBody")).includes("Apple"));
+  await p.evaluate(()=>closeSheet());await w(p,300);
   T("no JavaScript errors",p.errs.filter(e=>!/fetching the script/.test(e)).length===0,p.errs.join(" | "));H.done();
   await b.close()})();

@@ -205,7 +205,7 @@ function renderAuth(paso,email){
   const social=(P.google||P.apple)?`<div class="oauth">
       ${P.apple?`<button type="button" class="oa" id="aApple">${ASVG}<span>Continuar con Apple</span></button>`:""}
       ${P.google?`<button type="button" class="oa" id="aGoogle">${GSVG}<span>Continuar con Google</span></button>`:""}
-    </div><p class="or">o con tu correo</p>`:"";
+    </div><p class="hint oa-hint">Si ya tienes cuenta en Luca con ese mismo correo, se vincula sola y ves tus mismos datos.</p><p class="or">o con tu correo</p>`:"";
   const seg=(c)=>`<div class="cats seg" role="tablist" aria-label="Entrar o crear cuenta">
       <button type="button" role="tab" aria-selected="${!c}" aria-pressed="${!c}" data-paso="entrar">Entrar</button>
       <button type="button" role="tab" aria-selected="${c}" aria-pressed="${c}" data-paso="crear">Crear cuenta</button></div>`;
@@ -951,7 +951,7 @@ $("#fCat").onsubmit=async e=>{e.preventDefault();const n=$("#catNom").value.trim
 document.querySelectorAll("#app input").forEach(i=>i.setAttribute("autocomplete","off"));
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(f)leerRespaldo(f);e.target.value=""});
 /* ---------- Tu cuenta ---------- */
-const APP_VERSION="2.6.0";
+const APP_VERSION="2.7.0";
 const REPO_URL="https://github.com/Andresr-7/luca";
 const SOPORTE="luca.app.col@gmail.com";
 function nombreUsuario(){
@@ -973,6 +973,7 @@ function renderCuenta(){
     <div class="list">
       ${fila("cName","Cambiar mi nombre")}
       ${fila("cPass",prov==="email"?"Cambiar contraseña":"Crear una contraseña")}
+      ${fila("cVinc","Google, Apple y correo vinculados")}
       ${fila("cCsv","Exportar movimientos a Excel")}
       ${fila("cExport","Descargar respaldo completo")}
       ${fila("cImport","Importar respaldo")}
@@ -983,6 +984,7 @@ function renderCuenta(){
   $("#cPro")&&($("#cPro").onclick=irAPagar);
   $("#cName").onclick=()=>nombreSheet();
   $("#cPass").onclick=()=>nuevaClaveSheet(prov==="email"?"Cambiar contraseña":"Crear una contraseña");
+  $("#cVinc").onclick=vincSheet;
   $("#cCsv").onclick=exportarCSV;
   $("#cExport").onclick=exportar;
   $("#cImport").onclick=()=>$("#fileImport").click();
@@ -1106,3 +1108,28 @@ function maybeOnboard(){
 (()=>{const b=$("#swLite");if(!b)return;const h=document.documentElement;const pinta=()=>b.setAttribute("aria-checked",h.classList.contains("lite"));pinta();
   b.onclick=()=>{const on=!h.classList.contains("lite");h.classList.toggle("lite",on);try{localStorage.setItem("luca-lite",on?"1":"0")}catch(e){}pinta();vibrar(8)};
   addEventListener("load",()=>setTimeout(pinta,3500))})();
+
+/* Cuentas vinculadas: Google, Apple (iCloud) y correo en la misma cuenta de Luca */
+const PROV_ICO={google:typeof GSVG!=="undefined"?GSVG:"",apple:typeof ASVG!=="undefined"?ASVG:"",email:'<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3 7 9 6 9-6"/></svg>'};
+async function vincSheet(){
+  const P=(window.CONFIG&&CONFIG.PROVEEDORES)||{};
+  let ids=(user&&user.identities)||[];
+  try{if(sb.auth.getUserIdentities){const r=await sb.auth.getUserIdentities();if(r&&r.data&&r.data.identities)ids=r.data.identities}}catch(e){}
+  const tiene=p=>ids.find(i=>i.provider===p);
+  const fila=(p,nom)=>{const i=tiene(p),activo=p==="email"||P[p];const mail=i&&i.identity_data&&i.identity_data.email;
+    const acc=i?(ids.length>1&&p!=="email"?`<button type="button" class="ghost" data-desv="${p}">Desvincular</button>`:'<span class="chip in">Vinculada</span>')
+      :activo?`<button type="button" class="primary sm" data-vinc="${p}">Vincular</button>`:'<span class="chip">Pronto</span>';
+    return `<div class="ios-row vinc"><span class="vinc-ico">${PROV_ICO[p]}</span><span class="vinc-txt"><b>${nom}</b><small class="hint">${i?esc(mail||"Conectada"):p==="email"?"Crea una contraseña para entrar también con tu correo":"No vinculada"}</small></span>${acc}</div>`};
+  openSheet("Cuentas vinculadas",`<div class="stack"><p class="hint">Entra a Luca con cualquiera de estas opciones y verás siempre los mismos datos.</p>
+    <div class="ios-list solo">${fila("google","Google")}${fila("apple","Apple (iCloud)")}${fila("email","Correo y contraseña")}</div>
+    <p class="hint">Si entras con Google o Apple usando el mismo correo de tu cuenta, Luca las une automáticamente.</p></div>`,()=>{
+    document.querySelectorAll("[data-vinc]").forEach(b=>b.onclick=async()=>{const p=b.dataset.vinc;
+      if(p==="email"){closeSheet();nuevaClaveSheet("Crear una contraseña");return}
+      if(!sb.auth.linkIdentity){toast("Actualiza la app para vincular cuentas.");return}
+      const done=busy(b,"Abriendo…");const {error}=await sb.auth.linkIdentity({provider:p,options:{redirectTo:redirectURL()}});
+      if(error){done();toast(/manual linking/i.test(error.message||"")?"La vinculación aún no está activada. Inténtalo más tarde.":"No se pudo vincular. Inténtalo de nuevo.")}});
+    document.querySelectorAll("[data-desv]").forEach(b=>b.onclick=async()=>{const i=tiene(b.dataset.desv);if(!i||!sb.auth.unlinkIdentity)return;
+      const done=busy(b,"Quitando…");const {error}=await sb.auth.unlinkIdentity(i);done();
+      if(error){toast("No se pudo desvincular.");return}toast("Cuenta desvinculada");const u=await sb.auth.getUser();if(u&&u.data&&u.data.user)user=u.data.user;vincSheet()});
+  });
+}

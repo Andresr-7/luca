@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.7.0 — 2026-10-21
+- Linked accounts (Más → Cuenta): link or unlink Google and Apple (iCloud) to the same Luca account, or add a password; uses Supabase identity linking.
+- Sign-in screen explains that Google/Apple with the same email links to the existing account automatically.
+
 ## 2.6.0 — 2026-10-21 · Performance
 - Only the visible tab renders on each update; the others render when the phone is idle or when opened (~33% less work per update on a 6× throttled CPU).
 - Realtime changes are coalesced into one render per frame; local cache writes are batched and flushed on hide.
