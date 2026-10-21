@@ -114,3 +114,6 @@ create or replace view public.v_movimientos_cuentas with (security_invoker = tru
 select user_id, id, nullif(data->>'fecha','')::date as fecha, data->>'cuentaId' as cuenta_id, data->>'cuenta' as cuenta,
        data->>'tipo' as tipo, (data->>'valor')::numeric as valor_cop, data->>'nota' as nota
 from public.docs where collection = 'movcuentas';
+
+-- Rol especial (por ejemplo 'desarrollador'): solo se cambia desde el panel de Supabase.
+alter table public.profiles add column if not exists rol text;

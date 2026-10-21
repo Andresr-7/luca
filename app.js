@@ -90,7 +90,7 @@ function subscribe(){
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&user)loadAll().then(()=>setSync("Sincronizado")).catch(()=>setSync("Sin conexión"))});
 
 /* ---------- Plan y pagos (listo para cobrar en el futuro) ---------- */
-async function loadPerfil(){const {data}=await sb.from("profiles").select("plan,plan_until").eq("id",user.id).maybeSingle();if(data)perfil=data}
+async function loadPerfil(){const {data}=await sb.from("profiles").select("plan,plan_until,rol").eq("id",user.id).maybeSingle();if(data)perfil=data}
 const isPro=()=>perfil.plan==="pro"&&(!perfil.plan_until||new Date(perfil.plan_until)>new Date());
 const NOMBRES={tarjetas:"tarjetas",cuentas:"cuentas de ahorro",metas:"metas de ahorro"};
 function limitOk(k){
@@ -912,7 +912,7 @@ function renderCuenta(){
   const html=`<div class="me"><span class="avatar" aria-hidden="true">${esc(ini)}</span><div style="min-width:0;flex:1">
       <div class="me-name">${esc(nom||"Tu cuenta")}</div><div class="hint" style="overflow-wrap:anywhere">${esc(user.email||"")}</div>
       <div class="hint">Entraste con ${esc(PROV_TXT[prov]||prov)}</div></div>
-      <span class="chip ${isPro()?"in":""}">${isPro()?"Pro":"Gratis"}</span></div>
+      <span class="chip ${isPro()?"in":""}">${perfil.rol==="desarrollador"?"Desarrollador":isPro()?"Pro":"Gratis"}</span></div>
     ${CONFIG.PAGOS&&CONFIG.PAGOS.activo&&!isPro()?'<button class="primary" id="cPro">Mejorar a Pro</button>':""}
     <div class="list">
       ${fila("cName","Cambiar mi nombre")}
@@ -979,8 +979,8 @@ function renderPlan(){
   const el=$("#planPanel");if(!el)return;
   const pro=isPro();
   const html=`<div class="row-head"><div><div class="me-name">${pro?"Luca Pro":"Luca Gratis"}</div>
-      <div class="hint">${pro?(perfil.plan_until?"Activo hasta el "+fechaCorta(String(perfil.plan_until).slice(0,10)):"Activo"):"Todo incluido mientras Luca está en lanzamiento."}</div></div>
-      <span class="chip ${pro?"in":""}">${pro?"Activo":"Tu plan"}</span></div>
+      <div class="hint">${pro?(perfil.rol==="desarrollador"?"Cuenta de desarrollador: todo incluido, sin límites.":perfil.plan_until?"Activo hasta el "+fechaCorta(String(perfil.plan_until).slice(0,10)):"Activo"):"Todo incluido mientras Luca está en lanzamiento."}</div></div>
+      <span class="chip ${pro?"in":""}">${perfil.rol==="desarrollador"?"Desarrollador":pro?"Activo":"Tu plan"}</span></div>
     <ul class="checks"><li>Tarjetas en pesos y dólares, sin límite</li><li>Quincena, agenda y presupuestos</li><li>Cuentas de ahorro y metas</li><li>Sincronización entre celular y computador</li><li>Exportar a Excel y respaldos</li></ul>
     ${pro?"":`<p class="hint">Luca Pro llega pronto.</p>`}
     ${CONFIG.PAGOS&&CONFIG.PAGOS.activo&&!pro?'<button class="primary" id="plPro">Mejorar a Pro</button>':""}`;
