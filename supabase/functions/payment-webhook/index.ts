@@ -24,13 +24,22 @@ function leerEvento(body: unknown): Evento | null {
   };
 }
 
+// Comparación en tiempo constante: evita adivinar el secreto midiendo cuánto tarda la respuesta.
+function igualSeguro(a: string, b: string): boolean {
+  const x = new TextEncoder().encode(a), y = new TextEncoder().encode(b);
+  let d = x.length ^ y.length;
+  for (let i = 0; i < Math.max(x.length, y.length); i++) d |= (x[i] ?? 0) ^ (y[i] ?? 0);
+  return d === 0;
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
   const secret = Deno.env.get("WEBHOOK_SECRET");
-  if (!secret || req.headers.get("x-webhook-secret") !== secret) return new Response("Unauthorized", { status: 401 });
+  if (!secret || secret.length < 32 || !igualSeguro(req.headers.get("x-webhook-secret") ?? "", secret)) return new Response("Unauthorized", { status: 401 });
+  if (Number(req.headers.get("content-length") ?? 0) > 10_000) return new Response("Payload too large", { status: 413 });
 
   let ev: Evento | null = null;
-  try { ev = leerEvento(await req.json()); } catch { /* cuerpo inválido */ }
+  try { const txt = await req.text(); if (txt.length <= 10_000) ev = leerEvento(JSON.parse(txt)); } catch { /* cuerpo inválido */ }
   if (!ev) return new Response("Bad request", { status: 400 });
 
   // La clave service_role solo vive aquí, en el servidor. Nunca en la app.

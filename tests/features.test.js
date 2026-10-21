@@ -69,5 +69,14 @@ const w=(p,ms=300)=>p.waitForTimeout(ms);
   await p.fill("#pregIn","¿Cuánto debo?");await p.click("#fPreg button[type=submit]");await w(p,400);
   T("chat burbujas",(await p.$$(".msg.yo")).length===1&&(await p.$$(".msg.luca")).length>=2);
   T("panel seguridad",(await p.textContent("#seguridadPanel")).length>5,await p.textContent("#seguridadPanel"));
+  // Seguridad: XSS con datos del usuario, CSP y limpieza al salir
+  const PAY='<img src=x onerror="window.__xss=1"><script>window.__xss=2</script>';
+  await p.evaluate(P=>{const g={...S.gastos[0],id:"xss1",nota:P,categoria:P};S.gastos.push(g);S.tarjetas[0]={...S.tarjetas[0],nombre:P};S.cuentas[0]={...S.cuentas[0],nombre:P};render()},PAY);await w(p,300);
+  for(const t of await p.$$("nav.tabs [data-tab]")){await t.evaluate(e=>e.click());await w(p,250)}
+  await p.evaluate(()=>{try{responder("¿cuánto debo?")}catch(e){}});
+  T("sin XSS en datos",await p.evaluate(()=>!window.__xss&&!document.querySelector('#app img[src="x"]')));
+  T("CSP activa",await p.evaluate(()=>/script-src 'self'/.test(document.querySelector('meta[http-equiv="Content-Security-Policy"]').content)));
+  T("sin scripts externos",await p.evaluate(()=>[...document.scripts].every(s=>!s.src||new URL(s.src).origin===location.origin)));
+  T("salir borra caché local",await p.evaluate(()=>{localStorage.setItem("luca-cache-zz","{}");localStorage.setItem("luca-bloqueo","x");limpiarLocal();return !localStorage.getItem("luca-cache-zz")&&!localStorage.getItem("luca-bloqueo")}));
   T("no JavaScript errors",p.errs.filter(e=>!/fetching the script/.test(e)).length===0,p.errs.join(" | "));H.done();
   await b.close()})();

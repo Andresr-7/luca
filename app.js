@@ -123,12 +123,14 @@ function exportar(){
   document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},800);
 }
 function leerRespaldo(file){
+  if(!file||file.size>5*1024*1024){toast("El respaldo es demasiado grande (máximo 5 MB).");return}
   const fr=new FileReader();
   fr.onload=()=>{
-    let d;try{d=JSON.parse(fr.result)}catch(e){toast("Ese archivo no es un respaldo válido de Luca.");return}
+    let d;try{d=JSON.parse(fr.result,(k,v)=>k==="__proto__"||k==="constructor"||k==="prototype"?undefined:v)}catch(e){toast("Ese archivo no es un respaldo válido de Luca.");return}
     if(!d||typeof d!=="object"||!d.colecciones){toast("Ese archivo no es un respaldo válido de Luca.");return}
     const rows=[];
-    COLS.forEach(c=>(Array.isArray(d.colecciones[c])?d.colecciones[c]:[]).forEach(x=>{if(x&&x.id){const{id,...rest}=x;rows.push(fila(c,String(id),rest))}}));
+    COLS.forEach(c=>(Array.isArray(d.colecciones[c])?d.colecciones[c]:[]).forEach(x=>{if(x&&typeof x==="object"&&x.id&&String(x.id).length<=64&&JSON.stringify(x).length<=16000){const{id,...rest}=x;rows.push(fila(c,String(id),rest))}}));
+    if(rows.length>20000){toast("El respaldo tiene demasiados registros.");return}
     if(d.ajustes&&typeof d.ajustes==="object")rows.push(fila("ajustes","principal",{...defaultAjustes(),...d.ajustes}));
     const resumen=COLS.map(c=>[c,(d.colecciones[c]||[]).length]).filter(x=>x[1]).map(x=>x[1]+" "+x[0]).join(", ")||"solo ajustes";
     openSheet("Importar respaldo",`<div class="stack"><p>Este respaldo tiene: <b>${esc(resumen)}</b>.</p>
@@ -289,7 +291,8 @@ async function start(u){
   if(pendingRecovery){pendingRecovery=false;nuevaClaveSheet()}
   else if(ok)maybeOnboard();
 }
-function stop(){if(canal&&sb)sb.removeChannel(canal);canal=null;user=null;emptyState();closeSheet();showAuth()}
+function limpiarLocal(){try{Object.keys(localStorage).filter(k=>/^luca-(cache-|bloqueo)/.test(k)||/^sb-.*-auth-token$/.test(k)).forEach(k=>localStorage.removeItem(k))}catch(e){}}
+function stop(){if(canal&&sb)sb.removeChannel(canal);canal=null;if(user)limpiarLocal();user=null;emptyState();closeSheet();showAuth()}
 async function init(){
   const C=window.CONFIG||{};
   if(!window.supabase||!C.SUPABASE_URL||/TU-PROYECTO/.test(C.SUPABASE_URL)){
@@ -906,7 +909,7 @@ $("#fCat").onsubmit=async e=>{e.preventDefault();const n=$("#catNom").value.trim
 document.querySelectorAll("#app input").forEach(i=>i.setAttribute("autocomplete","off"));
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(f)leerRespaldo(f);e.target.value=""});
 /* ---------- Tu cuenta ---------- */
-const APP_VERSION="2.1.0";
+const APP_VERSION="2.2.0";
 const REPO_URL="https://github.com/Andresr-7/luca";
 const SOPORTE="luca.app.col@gmail.com";
 function nombreUsuario(){

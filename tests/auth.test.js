@@ -2,6 +2,7 @@ const {chromium}=require("playwright");const fs=require("fs");const path=require
 const APP=path.join(__dirname,"..");
 async function ctxFor(b,opts={}){const ctx=await b.newContext({viewport:{width:390,height:844},locale:"es-CO",timezoneId:"America/Bogota",colorScheme:opts.scheme||"light",acceptDownloads:true});
  await ctx.route("**/*",async r=>{const u=new URL(r.request().url());
+   if(u.hostname==="app.test"&&u.pathname.startsWith("/vendor/supabase"))return r.fulfill({body:fs.readFileSync(path.join(__dirname,"mock-supabase.js")),contentType:"text/javascript"});
    if(u.hostname==="app.test"){let p=u.pathname==="/"?"/index.html":u.pathname;if(!fs.existsSync(path.join(APP,p)))return r.fulfill({status:404,body:""});
      const ct={".html":"text/html",".js":"text/javascript",".css":"text/css",".png":"image/png",".webmanifest":"application/manifest+json"}[path.extname(p)]||"text/plain";
      return r.fulfill({body:fs.readFileSync(path.join(APP,p)),contentType:ct})}

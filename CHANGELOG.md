@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.2.0 — 2026-10-21 · Security
+- Strict Content-Security-Policy (no inline or third-party scripts) and referrer policy on every page.
+- Supabase client self-hosted and pinned in `vendor/` (no CDN supply-chain risk); clickjacking protection.
+- Logout wipes local cache, session and biometric lock; hardened backup import (size, prototype pollution, row caps).
+- `supabase/security.sql`: collection allow-list, size and row limits, server timestamps, revoked grants.
+- Payment webhook: constant-time secret check, payload limit.
+- CodeQL, Dependabot, least-privilege CI, `SECURITY.md` threat model, `security.txt`, automated XSS/CSP tests.
+
 ## 2.1.0 — 2026-10-21
 - **Pregúntale a Luca**: chat that answers questions about your money ("¿cuánto gasté en comida?", "¿cuánto debo?", "¿cuándo vence…?") computed entirely on the device.
 - **Fingerprint / Face ID lock** (WebAuthn platform authenticator), auto-relock after 60 s in background.

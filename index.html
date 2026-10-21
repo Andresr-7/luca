@@ -2,6 +2,8 @@
 <html lang="es-CO">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://urlfdhmksnfnlaqnnemc.supabase.co wss://urlfdhmksnfnlaqnnemc.supabase.co https://www.datos.gov.co; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Luca</title>
 <meta name="description" content="Luca: tus tarjetas, tu quincena y tus gastos en un solo lugar. Pesos y dólares, agenda de pagos y cuentas de ahorro.">
@@ -253,7 +255,7 @@
   <div id="sheetBody"></div>
 </div></div>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="vendor/supabase-2.45.4.js"></script>
 <script src="config.js"></script>
 <script src="i18n-en.js"></script>
 <script src="i18n.js"></script>
@@ -261,6 +263,6 @@
 <script src="extras.js"></script>
 <script src="pro.js"></script>
 <script src="asistente.js"></script>
-<script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));</script>
+<script src="boot.js"></script>
 </body>
 </html>

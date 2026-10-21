@@ -4,6 +4,7 @@ exports.launch=()=>chromium.launch(process.env.CHROMIUM_PATH?{executablePath:pro
 exports.page=async(b,opts={})=>{
   const ctx=await b.newContext({viewport:opts.vp||{width:390,height:844},deviceScaleFactor:opts.dpr||2,colorScheme:opts.scheme||"light",acceptDownloads:true,locale:opts.locale||"es-CO",timezoneId:"America/Bogota"});
   await ctx.route("**/*",async r=>{const u=new URL(r.request().url());
+    if(u.hostname==="app.test"&&u.pathname.startsWith("/vendor/supabase"))return r.fulfill({body:fs.readFileSync(path.join(__dirname,"mock-supabase.js")),contentType:"text/javascript"});
     if(u.hostname==="app.test"){let p=u.pathname==="/"?"/index.html":u.pathname;const f=path.join(APP,decodeURIComponent(p));if(!fs.existsSync(f))return r.fulfill({status:404,body:""});
       const ct={".html":"text/html",".js":"text/javascript",".css":"text/css",".png":"image/png",".svg":"image/svg+xml",".woff2":"font/woff2",".webmanifest":"application/manifest+json"}[path.extname(p)]||"text/plain";
       return r.fulfill({body:fs.readFileSync(f),contentType:ct})}

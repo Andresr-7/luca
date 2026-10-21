@@ -36,6 +36,7 @@ I built Luca to answer that question for my own finances, then turned it into a 
 | Email | Brevo SMTP for 6-digit sign-in / recovery codes | Free tier, custom templates |
 | Hosting | GitHub Pages + Service Worker (offline-first PWA) | Free, HTTPS, installable |
 | Android | Trusted Web Activity built with Bubblewrap/PWABuilder, Digital Asset Links | Same codebase ships to Google Play |
+| Security | CSP, RLS, WebAuthn, CodeQL, Dependabot | Defense in depth, see SECURITY.md |
 | Testing | Playwright end-to-end tests against a mocked Supabase client, GitHub Actions CI | 50+ checks on every push |
 
 ## Architecture
@@ -74,6 +75,10 @@ create table public.profiles (id uuid primary key references auth.users, plan te
 - **Security in the database, not the client.** The public anon key is safe to ship because RLS restricts every row to its owner; plan and role live in `profiles`, which users can read but never update.
 - **Optimistic UI.** Writes update local state immediately, then sync; Realtime pushes changes from other devices.
 - **Account deletion** runs through a `security definer` function, as required by Google Play.
+
+## Security
+
+Strict CSP with no third-party scripts, self-hosted dependencies, Row Level Security plus database constraints, a hardened payment webhook, biometric lock, CodeQL and automated XSS tests. Full threat model in [`SECURITY.md`](SECURITY.md).
 
 ## Run it locally
 
