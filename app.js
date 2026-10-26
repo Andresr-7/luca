@@ -631,15 +631,32 @@ function renderMas(a){
 /* ---------- Hojas ---------- */
 let sheetT=null;
 function openSheet(title,html,onMount){clearTimeout(sheetT);$("#sheetBack").classList.remove("closing");const sh=$("#sheetBack .sheet");sh.style.transform="";$("#sheetTitle").textContent=title;$("#sheetBody").innerHTML=html;$("#sheetBody").querySelectorAll("input").forEach(i=>i.setAttribute("autocomplete","off"));$("#sheetBack").hidden=false;onMount&&onMount();const f=$("#sheetBody input:not([disabled])");f&&setTimeout(()=>f.focus(),50)}
-function closeSheet(){const b=$("#sheetBack");if(b.hidden)return;
-  if(matchMedia("(prefers-reduced-motion: reduce)").matches){b.hidden=true;$("#sheetBody").innerHTML="";return}
+function closeSheet(ya){const b=$("#sheetBack");if(b.hidden)return;
+  if(ya===true||matchMedia("(prefers-reduced-motion: reduce)").matches){b.classList.remove("closing");$("#sheetBack .sheet").style.transform="";b.hidden=true;$("#sheetBody").innerHTML="";return}
   b.classList.add("closing");clearTimeout(sheetT);sheetT=setTimeout(()=>{if(!b.classList.contains("closing"))return;b.hidden=true;b.classList.remove("closing");$("#sheetBack .sheet").style.transform="";$("#sheetBody").innerHTML=""},300)}
-/* Deslizar hacia abajo para cerrar la hoja, como en iPhone */
-(()=>{const sh=$("#sheetBack .sheet");let y0=null,dy=0;
-  sh.addEventListener("touchstart",e=>{if(sh.scrollTop>0||e.target.closest("input,select,textarea,[type=range]"))return;y0=e.touches[0].clientY;dy=0},{passive:true});
-  sh.addEventListener("touchmove",e=>{if(y0==null)return;dy=Math.max(0,e.touches[0].clientY-y0);if(dy>4){sh.classList.add("dragging");sh.style.transform=`translateY(${dy}px)`}},{passive:true});
-  sh.addEventListener("touchend",()=>{if(y0==null)return;y0=null;sh.classList.remove("dragging");
-    if(dy>110){closeSheet()}else{sh.style.transition="transform .35s cubic-bezier(.2,.9,.25,1)";sh.style.transform="";setTimeout(()=>sh.style.transition="",360)}});
+/* Deslizar hacia abajo para cerrar la hoja, como en iPhone: sigue el dedo 1:1, resiste al subir,
+   proyecta el impulso para decidir, y termina con un resorte que hereda la velocidad del dedo. */
+(()=>{const sh=$("#sheetBack .sheet");let g=null,stop=null;
+  const quieto=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const goma=(o,d)=>(o*d*.55)/(d+.55*Math.abs(o));
+  const proyectar=(v,r=.998)=>(v/1000)*r/(1-r);
+  const resorte=(desde,hasta,v0,{amort=1,resp=.3},cada,fin)=>{const w=2*Math.PI/resp;let x=desde-hasta,v=v0,t0=performance.now(),id;
+    const paso=t=>{const dt=Math.min(.032,(t-t0)/1000);t0=t;v+=(-w*w*x-2*amort*w*v)*dt;x+=v*dt;
+      if(Math.abs(x)<.5&&Math.abs(v)<8){cada(hasta);fin&&fin();return}cada(hasta+x);id=requestAnimationFrame(paso)};
+    id=requestAnimationFrame(paso);return()=>cancelAnimationFrame(id)};
+  const pon=y=>{sh.style.transform=y?`translateY(${y}px)`:""};
+  sh.addEventListener("touchstart",e=>{if(sh.scrollTop>0||e.target.closest("input,select,textarea,[type=range],.chat"))return;
+    stop&&stop();stop=null;const m=/translateY\((-?[\d.]+)px\)/.exec(sh.style.transform);const base=m?+m[1]:0;
+    const y=e.touches[0].clientY;g={y0:y-base,base,act:false,h:[[performance.now(),base]]}},{passive:true});
+  sh.addEventListener("touchmove",e=>{if(!g)return;let d=e.touches[0].clientY-g.y0;
+    if(!g.act){if(Math.abs(d-g.base)<10)return;if(d<g.base&&g.base===0){g=null;return}g.act=true;sh.classList.add("dragging")}
+    const y=d<0?-goma(-d,sh.offsetHeight):d;pon(y);g.h.push([performance.now(),y]);if(g.h.length>6)g.h.shift()},{passive:true});
+  const suelta=()=>{if(!g)return;const a=g;g=null;if(!a.act)return;sh.classList.remove("dragging");
+    const [t1,y1]=a.h[a.h.length-1],[t0,y0]=a.h[0];const v=t1>t0?(y1-y0)/((t1-t0)/1000):0;const alto=sh.offsetHeight;
+    if(quieto()){if(y1>alto*.3)closeSheet(true);else pon(0);return}
+    if(y1+proyectar(v)>alto*.5){vibrar(6);stop=resorte(y1,alto,v,{amort:1,resp:.28},pon,()=>{stop=null;closeSheet(true)})}
+    else stop=resorte(y1,0,v,{amort:.85,resp:.3},pon,()=>{stop=null})};
+  sh.addEventListener("touchend",suelta);sh.addEventListener("touchcancel",suelta);
 })();
 const vibrar=(ms=8)=>{try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}};
 $("#sheetClose").onclick=closeSheet;
@@ -951,7 +968,7 @@ $("#fCat").onsubmit=async e=>{e.preventDefault();const n=$("#catNom").value.trim
 document.querySelectorAll("#app input").forEach(i=>i.setAttribute("autocomplete","off"));
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(f)leerRespaldo(f);e.target.value=""});
 /* ---------- Tu cuenta ---------- */
-const APP_VERSION="2.7.0";
+const APP_VERSION="2.8.0";
 const REPO_URL="https://github.com/Andresr-7/luca";
 const SOPORTE="luca.app.col@gmail.com";
 function nombreUsuario(){
@@ -1022,7 +1039,7 @@ function exportarCSV(){
 
 /* ---------- Apariencia (por dispositivo) ---------- */
 function temaGuardado(){try{return localStorage.getItem("luca-tema")||"auto"}catch(e){return "auto"}}
-function aplicarTema(t){
+function aplicarTema(t){const H=document.documentElement;H.classList.add("tema-cambio");clearTimeout(aplicarTema.t);aplicarTema.t=setTimeout(()=>H.classList.remove("tema-cambio"),600);
   const r=document.documentElement;if(t==="light"||t==="dark")r.dataset.theme=t;else delete r.dataset.theme;
   try{localStorage.setItem("luca-tema",t)}catch(e){}
   const dark=t==="dark"||(t==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);

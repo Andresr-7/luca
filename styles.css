@@ -857,3 +857,25 @@ html.lite .glass-shadow,html.lite .panel,html.lite .card,html.lite .hero{box-sha
 .primary.sm{min-height:34px;padding:6px 14px;font-size:14px;width:auto}
 .oa-hint{text-align:center;margin-top:-6px;font-size:13px}
 .vinc-txt{text-align:left;align-items:flex-start}.vinc-txt b{font-weight:600}
+
+/* ---------- v2.8: guía apple-design ---------- */
+/* Respuesta inmediata al presionar (pointer-down), sin esperar al soltar */
+button,a,[role=button],.qchip,.item{touch-action:manipulation}
+button:active,.qchip:active{transition-duration:.1s}
+.sheet.dragging{transition:none!important;will-change:transform}
+/* Tipografía: tracking según tamaño — títulos más cerrados, texto pequeño neutro */
+h1,.big,.hero .big{letter-spacing:-0.03em;line-height:1.05}
+h2{letter-spacing:-0.02em}
+.hint,small,.chip,.tag{letter-spacing:0}
+/* Cambio de tema suave, sin saltos bruscos de brillo */
+html.tema-cambio body,html.tema-cambio .panel,html.tema-cambio .card,html.tema-cambio .sheet,html.tema-cambio nav.tabs,html.tema-cambio .ios-list{transition:background-color .45s ease,color .45s ease,border-color .45s ease}
+/* Borde superior luminoso en la barra de vidrio, como la luz sobre el material */
+nav.tabs{box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) nav.tabs{box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}}
+:root[data-theme="dark"] nav.tabs{box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
+/* Accesibilidad: menos transparencia y más contraste cuando el sistema lo pide */
+@media (prefers-reduced-transparency:reduce){*,*::before,*::after{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  :root{--surface:#fff;--surface-2:#f4f6ff;--chrome:#f6f8ff}body::before{animation:none!important}.sheet{background:var(--canvas)!important}}
+@media (prefers-reduced-transparency:reduce) and (prefers-color-scheme:dark){:root:not([data-theme="light"]){--surface:#121a33;--surface-2:#1a2444;--chrome:#0a0f22}}
+@media (prefers-contrast:more){.panel,.card,.list,.ios-list,.hero,.sheet,input,select,textarea{border:1px solid var(--ink)!important}
+  :root{--mute:color-mix(in srgb,var(--ink) 80%,transparent)}}

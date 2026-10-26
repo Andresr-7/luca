@@ -11,6 +11,7 @@ exports.page=async(b,opts={})=>{
     if(u.hostname==="cdn.jsdelivr.net")return r.fulfill({body:fs.readFileSync(path.join(__dirname,"mock-supabase.js")),contentType:"text/javascript"});
     if(u.hostname==="www.datos.gov.co")return r.fulfill({body:'[{"valor":"3156.32","vigenciadesde":"2026-10-20T00:00:00.000"}]',contentType:"application/json"});
     return r.abort()});
+  if(ctx.clock)await ctx.clock.setFixedTime(new Date("2026-10-21T12:00:00-05:00")); // fecha fija: las pruebas no dependen del día en que corren
   const s=seed();
   await ctx.addInitScript(([st,se,lang])=>{if(!sessionStorage.getItem("__seeded")){localStorage.setItem("__mockdb",JSON.stringify(st));localStorage.setItem("__mocksess",JSON.stringify(se));if(lang)localStorage.setItem("luca-idioma",lang);sessionStorage.setItem("__seeded","1")}},[s.store,opts.empty?null:s.sess,opts.lang||null]);
   const p=await ctx.newPage();p.errs=[];p.on("pageerror",e=>p.errs.push(e.message));p.on("console",m=>{if(m.type()==="error")p.errs.push("console: "+m.text())});
