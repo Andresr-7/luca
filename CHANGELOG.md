@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.0 — 2026-10-26 · Pure iOS look
+- Removed the glass/aurora theme: no backdrop blur, no animated gradients, no purple or lime accents.
+- iOS system palette: grouped background (#F2F2F7 / black), flat white or #1C1C1E cards, system blue, hairline separators, solid tab bar, gray initials avatar like Contacts.
+- Sign-in screen is now a plain iOS screen: large title, filled text fields, segmented control, blue button.
+- Code input, fields and buttons keep their motion (springs, shake on error) but drop halos and glows.
+
 ## 2.8.1 — 2026-10-26
 - Mobile-native pass: hover styles gated behind `(hover: hover) and (pointer: fine)` so they don't stick after a tap, overscroll contained in sheets and chat, no long-press callout on controls, 16 px minimum input text on touch, keyboard resizes the layout on Android (`interactive-widget`), status bar colors match the new canvas.
 

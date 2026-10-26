@@ -885,3 +885,80 @@ nav.tabs{box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
 .sheet,.chat,.story{overscroll-behavior:contain}
 button,[role=button],.tab,.chip,.qchip,.sug{-webkit-touch-callout:none}
 @media (pointer:coarse){input,textarea,select{font-size:max(16px,1em)}}
+
+/* =========================================================================
+   v3.0 · Apple puro. Sistema de iOS: fondos agrupados, tarjetas planas,
+   azul del sistema, sin vidrio, sin auroras, sin degradados. Esta capa manda.
+   ========================================================================= */
+:root,:root[data-theme="light"]{
+  --canvas:#F2F2F7; --surface:#FFFFFF; --surface-2:#F2F2F7; --fill:rgba(118,118,128,.12); --fill-2:rgba(118,118,128,.08);
+  --ink:#000000; --body:#000000; --mute:rgba(60,60,67,.6); --line:rgba(60,60,67,.18);
+  --primary:#007AFF; --on-primary:#FFFFFF; --primary-pale:rgba(0,122,255,.12); --accent-ink:#007AFF; --bar:#007AFF;
+  --hero:#FFFFFF; --hero-ink:#000000; --hero-num:#000000; --hero-cta:#007AFF; --hero-cta-ink:#FFFFFF; --hero-btn:rgba(118,118,128,.12);
+  --chrome:#F9F9F9; --seg-on:#FFFFFF; --glass-line:transparent; --glass-shadow:none; --aurora:none;
+  --sys-green:#34C759; --sys-red:#FF3B30; --pos:#248A3D; --neg:#D70015;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --canvas:#000000; --surface:#1C1C1E; --surface-2:#2C2C2E; --fill:rgba(118,118,128,.24); --fill-2:rgba(118,118,128,.16);
+  --ink:#FFFFFF; --body:#FFFFFF; --mute:rgba(235,235,245,.6); --line:rgba(84,84,88,.6);
+  --primary:#0A84FF; --primary-pale:rgba(10,132,255,.18); --accent-ink:#0A84FF; --bar:#0A84FF;
+  --hero:#1C1C1E; --hero-ink:#FFFFFF; --hero-num:#FFFFFF; --hero-cta:#0A84FF; --hero-btn:rgba(118,118,128,.24);
+  --chrome:#161616; --seg-on:#636366; --sys-green:#30D158; --sys-red:#FF453A; --pos:#30D158; --neg:#FF453A}}
+:root[data-theme="dark"]{
+  --canvas:#000000; --surface:#1C1C1E; --surface-2:#2C2C2E; --fill:rgba(118,118,128,.24); --fill-2:rgba(118,118,128,.16);
+  --ink:#FFFFFF; --body:#FFFFFF; --mute:rgba(235,235,245,.6); --line:rgba(84,84,88,.6);
+  --primary:#0A84FF; --primary-pale:rgba(10,132,255,.18); --accent-ink:#0A84FF; --bar:#0A84FF;
+  --hero:#1C1C1E; --hero-ink:#FFFFFF; --hero-num:#FFFFFF; --hero-cta:#0A84FF; --hero-btn:rgba(118,118,128,.24);
+  --chrome:#161616; --seg-on:#636366; --sys-green:#30D158; --sys-red:#FF453A; --pos:#30D158; --neg:#FF453A}
+html.lite{--surface:initial}
+/* Fuera vidrio, auroras y brillos */
+*,*::before,*::after{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+body::before,.hero::after,.auth-bg,#auth .shard{display:none!important;animation:none!important}
+body{background:var(--canvas)!important}
+.panel,.card,.list,.hero,.libre,.quick,.payoff-card,.cupo-sum,.ios-list.solo,.rings-card,.ins,.pro-promo,.ask-bar,.stat,.payday,.ciclo,.bars,.empty,.celebra-card{
+  background:var(--surface)!important;border:0!important;box-shadow:none!important;border-radius:14px}
+.hero{color:var(--hero-ink)!important}
+.sheet{background:var(--surface)!important;border:0!important;box-shadow:0 -1px 0 var(--line)}
+nav.tabs{background:var(--chrome)!important;border-top:.5px solid var(--line)!important;box-shadow:none!important}
+#navMini{background:var(--chrome)!important;border-bottom:.5px solid var(--line)}
+.primary{background:var(--primary)!important;color:#fff!important;box-shadow:none!important}
+.fab{background:var(--primary)!important;box-shadow:0 4px 14px rgba(0,0,0,.18)!important}
+.brand-mark{box-shadow:none!important}
+.ask-bar svg{color:var(--primary)}
+/* Campos estilo iOS: relleno gris, sin halo ni levantarse */
+input:not([type=range]):not([type=checkbox]):not([type=radio]):not(.code-in),select,textarea{border:0!important;background:var(--fill-2);transform:none!important}
+input:not([type=range]):not([type=checkbox]):not([type=radio]):not(.code-in):focus,select:focus,textarea:focus{background:var(--fill)!important;box-shadow:none!important;transform:none!important}
+.panel input,.panel select,.sheet input,.sheet select{background:var(--fill)}
+input.bad,select.bad,textarea.bad{box-shadow:inset 0 0 0 1.5px var(--sys-red)!important}
+/* Entrada: pantalla limpia de iOS */
+#auth{--canvas:inherit;--ink:inherit;--mute:inherit;--fill:inherit;--fill-2:inherit;--surface:inherit;--surface-2:inherit;--primary:inherit;--accent-ink:inherit;--gold:var(--primary);color-scheme:normal;color:var(--ink)}
+body:has(#auth:not([hidden])){background:var(--canvas)!important}
+#auth .auth-card{background:transparent!important;border:0!important;box-shadow:none!important;padding:8px 0;animation:none}
+@media (prefers-reduced-motion:no-preference){#auth .auth-card{animation:authIn .5s cubic-bezier(.32,.72,0,1) both}@keyframes authIn{from{opacity:0;transform:translateY(12px)}}}
+#auth h1 .acc{background:none!important;-webkit-background-clip:border-box;background-clip:border-box;color:inherit!important}
+#auth label{color:var(--ink)}
+#auth input:not([type=checkbox]):not(.code-in),#auth .otp .slot{background-color:var(--surface)!important;border:0!important}
+#auth input:not([type=checkbox]):not(.code-in):focus{background-color:var(--surface)!important;box-shadow:inset 0 0 0 1.5px var(--primary)!important}
+#auth input::placeholder{color:var(--mute)}
+#auth .primary{background:var(--primary)!important;color:#fff!important;box-shadow:none!important}
+#auth .primary::after{content:none!important}
+#auth .seg{background:var(--fill)!important}
+#auth .seg button{color:var(--ink)}
+#auth .seg button[aria-selected="true"]{background:var(--seg-on)!important;color:var(--ink)!important;box-shadow:0 3px 8px rgba(0,0,0,.12),0 3px 1px rgba(0,0,0,.04)!important}
+#auth .oa{background:var(--surface)!important;color:var(--ink)!important;border:0!important}
+#auth .ghost{color:var(--primary)}
+#auth .brand-mark{box-shadow:none!important}
+.check input{accent-color:var(--primary)}
+/* Código: casillas planas; la activa con borde azul, sin halos */
+.otp .slot{background:var(--surface)!important;border:1.5px solid transparent!important}
+.otp .slot.on{border-color:transparent!important}
+.otp .slot.cur{border-color:var(--primary)!important;box-shadow:none!important}
+.otp .slot.cur:not(.on)::after,#auth .otp .slot.cur:not(.on)::after{background:var(--primary)!important}
+#auth .otp .slot.cur{border-color:var(--primary)!important;box-shadow:none!important}
+.otp-seal rect,#auth .otp-seal rect{stroke:var(--primary)!important}
+.otp.ok .otp-seal rect{stroke:var(--sys-green)!important}
+.otp.ok .slot{border-color:var(--sys-green)!important;background:var(--surface)!important}
+.otp.err .slot{border-color:var(--sys-red)!important}
+button.lap::after,button.primary.lap::after{background:conic-gradient(from var(--lap),transparent 0 70%,rgba(255,255,255,.9) 85%,transparent 100%)!important}
+.avatar-btn,.avatar{background:linear-gradient(180deg,#A5ABB8,#858994)!important;color:#fff}
+.pro-badge{background:var(--ink)!important;color:var(--canvas)!important}
