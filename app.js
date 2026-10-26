@@ -228,7 +228,7 @@ function renderAuth(paso,email){
       <label>Correo<input id="aMail" name="email" type="email" autocomplete="email" spellcheck="false" placeholder="tucorreo@ejemplo.com" value="${mailVal}"></label>
       <div class="pw-2">${pwField("aPass","Contraseña","new-password","Mínimo 8")}${pwField("aPass2","Confirmar","new-password","Repítela")}</div>
       <div class="pw-meter" aria-hidden="true"><i></i></div>
-      <label class="check"><input type="checkbox" id="aTerms"><span>Acepto los <a href="terminos.html" target="_blank" rel="noopener">términos</a> y la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a></span></label>
+      <label class="check"><input type="checkbox" class="raw" id="aTerms"><span>Acepto los <a href="terminos.html" target="_blank" rel="noopener">términos</a> y la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a></span></label>
       <button class="primary go" type="submit">Crear mi cuenta</button></form>`;
     $("#aPass").addEventListener("input",e=>{const v=e.target.value;let s=0;if(v.length>=8)s++;if(v.length>=12)s++;if(/[A-Z]/.test(v)&&/[a-z]/.test(v))s++;if(/\d/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;
       const m=$(".pw-meter i");m.style.width=Math.min(100,s*20)+"%";m.dataset.s=s<=1?"low":s<=3?"mid":"high"});
@@ -968,7 +968,7 @@ $("#fCat").onsubmit=async e=>{e.preventDefault();const n=$("#catNom").value.trim
 document.querySelectorAll("#app input").forEach(i=>i.setAttribute("autocomplete","off"));
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(f)leerRespaldo(f);e.target.value=""});
 /* ---------- Tu cuenta ---------- */
-const APP_VERSION="3.1.0";
+const APP_VERSION="3.2.0";
 const REPO_URL="https://github.com/Andresr-7/luca";
 const SOPORTE="luca.app.col@gmail.com";
 function nombreUsuario(){
@@ -1038,12 +1038,12 @@ function exportarCSV(){
 }
 
 /* ---------- Apariencia (por dispositivo) ---------- */
-function temaGuardado(){try{return localStorage.getItem("luca-tema")||"auto"}catch(e){return "auto"}}
+function temaGuardado(){return "light"} /* Luca usa solo el modo claro de iOS */
 function aplicarTema(t){const H=document.documentElement;H.classList.add("tema-cambio");clearTimeout(aplicarTema.t);aplicarTema.t=setTimeout(()=>H.classList.remove("tema-cambio"),600);
   const r=document.documentElement;if(t==="light"||t==="dark")r.dataset.theme=t;else delete r.dataset.theme;
   try{localStorage.setItem("luca-tema",t)}catch(e){}
   const dark=t==="dark"||(t==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);
-  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute("content",dark?"#000000":"#F2F2F7"));
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute("content","#F2F2F7"));
   document.querySelectorAll("#temaSeg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.tema===t));
 }
 aplicarTema(temaGuardado());

@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.2.0 — 2026-10-26
+- Light mode only (iOS light appearance), even on phones set to dark; theme picker removed.
+- Checkboxes are iOS switches (UISwitch look and spring); terms acceptance uses the iOS selection circle.
+- System gray for inactive tab bar items, iOS sheet grabber, tabular numbers for amounts.
+
 ## 3.1.0 — 2026-10-26
 - iOS navigation bar: plain blue glyph buttons (chat, +, privacy) above a 34 pt large title; greeting in sentence case instead of an uppercase eyebrow.
 - No floating action button on phones: "+" lives in the nav bar like iOS apps.

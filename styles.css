@@ -926,8 +926,8 @@ nav.tabs{background:var(--chrome)!important;border-top:.5px solid var(--line)!im
 .brand-mark{box-shadow:none!important}
 .ask-bar svg{color:var(--primary)}
 /* Campos estilo iOS: relleno gris, sin halo ni levantarse */
-input:not([type=range]):not([type=checkbox]):not([type=radio]):not(.code-in),select,textarea{border:0!important;background:var(--fill-2);transform:none!important}
-input:not([type=range]):not([type=checkbox]):not([type=radio]):not(.code-in):focus,select:focus,textarea:focus{background:var(--fill)!important;box-shadow:none!important;transform:none!important}
+input:not([type=range]):not([type=checkbox]):not([type=radio]):not(.code-in),select,textarea{border:0!important;background-color:var(--fill-2);transform:none!important}
+input:not([type=range]):not([type=checkbox]):not([type=radio]):not(.code-in):focus,select:focus,textarea:focus{background-color:var(--fill)!important;box-shadow:none!important;transform:none!important}
 .panel input,.panel select,.sheet input,.sheet select{background:var(--fill)}
 input.bad,select.bad,textarea.bad{box-shadow:inset 0 0 0 1.5px var(--sys-red)!important}
 /* Entrada: pantalla limpia de iOS */
@@ -998,3 +998,31 @@ h2{font-size:20px;font-weight:600}
 /* Botones de "agregar" al final de una lista: texto azul, sin cápsula */
 button.add,.add-btn,button.ghost.wide,.block>button.ghost{background:transparent!important;border-radius:12px!important}
 #addAcct,#addCard,#addCuenta,#addTarjeta,[id^="add"]:not(.primary){background:transparent!important;color:var(--primary)!important;box-shadow:none!important}
+
+/* ---------- v3.2: solo modo claro + controles nativos de iOS ---------- */
+:root{color-scheme:light}
+#temaSeg,#temaSeg+.hint{display:none!important}
+/* Casillas como interruptores de iOS (UISwitch) */
+input[type=checkbox]:not(.raw){-webkit-appearance:none;appearance:none;width:51px!important;height:31px!important;min-height:31px!important;flex:none;
+  border-radius:99px;background:rgba(120,120,128,.16)!important;position:relative;margin:0;padding:0!important;cursor:pointer;border:0!important;
+  transition:background-color .25s ease;box-shadow:none!important}
+input[type=checkbox]:not(.raw)::before{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:99px;background:#fff;
+  box-shadow:0 3px 8px rgba(0,0,0,.15),0 3px 1px rgba(0,0,0,.06);transition:transform .3s cubic-bezier(.3,1.25,.5,1)}
+input[type=checkbox]:not(.raw):checked{background:#34C759!important}
+input[type=checkbox]:not(.raw):checked::before{transform:translateX(20px)}
+input[type=checkbox]:not(.raw):focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+label:has(>input[type=checkbox]){display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;gap:12px}
+label:has(>input[type=checkbox])>input{order:2}
+.check{justify-content:space-between}
+/* Tab bar de iOS: etiquetas 10 pt, inactivo gris del sistema */
+nav.tabs button{color:#8E8E93}
+nav.tabs button[aria-current="page"]{color:var(--primary)}
+/* Agarradera de hoja de iOS */
+.sheet::before{background:rgba(60,60,67,.3)!important;width:36px!important;height:5px!important;border-radius:3px!important}
+/* Números tabulares en montos, como Wallet */
+.num,.big,.av-v{font-variant-numeric:tabular-nums}
+/* Aceptar términos: círculo de selección de iOS */
+input.raw[type=checkbox]{-webkit-appearance:none;appearance:none;width:22px!important;height:22px!important;min-height:22px!important;border-radius:50%;border:1.5px solid rgba(60,60,67,.3)!important;background:#fff!important;position:relative;flex:none;margin:0;padding:0!important}
+input.raw[type=checkbox]:checked{background:var(--primary)!important;border-color:var(--primary)!important}
+input.raw[type=checkbox]:checked::after{content:"";position:absolute;left:6.5px;top:3px;width:5px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+label.check:has(>input.raw){justify-content:flex-start}label.check:has(>input.raw)>input{order:0}

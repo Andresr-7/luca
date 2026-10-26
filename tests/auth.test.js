@@ -37,8 +37,7 @@ const w=(p,ms=250)=>p.waitForTimeout(ms);
  T("panel cuenta",(await p.textContent("#cuentaPanel")).includes("ana@test.co"));
  T("plan gratis",(await p.textContent("#planPanel")).includes("Luca Gratis"));
  T("ayuda versión",(await p.textContent("#ayudaPanel")).includes(fs.readFileSync(path.join(APP,"app.js"),"utf8").match(/APP_VERSION="([\d.]+)"/)[1]));
- await p.click('#temaSeg [data-tema="dark"]');T("tema oscuro",await p.evaluate(()=>document.documentElement.dataset.theme==="dark"));
- await p.click('#temaSeg [data-tema="auto"]');
+ T("solo modo claro",await p.evaluate(()=>document.documentElement.dataset.theme==="light"));
  // CSV
  await p.evaluate(()=>{S.gastos.push({id:"g1",valor:23000,categoria:"Comida",nota:"Almuerzo; con \"amigos\"",fecha:"2026-10-20",medio:"Efectivo"});render()});
  const [dl]=await Promise.all([p.waitForEvent("download"),p.click("#cCsv")]);const csv=fs.readFileSync(await dl.path(),"utf8");
