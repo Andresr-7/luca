@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.8.1 — 2026-10-26
+- Mobile-native pass: hover styles gated behind `(hover: hover) and (pointer: fine)` so they don't stick after a tap, overscroll contained in sheets and chat, no long-press callout on controls, 16 px minimum input text on touch, keyboard resizes the layout on Android (`interactive-widget`), status bar colors match the new canvas.
+
 ## 2.8.0 — 2026-10-26 · Apple design pass
 - Sheets: swipe-to-dismiss now follows the finger 1:1 after a 10 px threshold, projects release momentum (Apple's deceleration formula) to decide close vs. return, and finishes with a velocity-inheriting spring (critically damped to close, slight bounce to return).
 - Size-specific tracking (tighter display text, neutral small text), smooth light/dark theme change, light-catching top edge on the glass tab bar.

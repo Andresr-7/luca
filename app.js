@@ -968,7 +968,7 @@ $("#fCat").onsubmit=async e=>{e.preventDefault();const n=$("#catNom").value.trim
 document.querySelectorAll("#app input").forEach(i=>i.setAttribute("autocomplete","off"));
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(f)leerRespaldo(f);e.target.value=""});
 /* ---------- Tu cuenta ---------- */
-const APP_VERSION="2.8.0";
+const APP_VERSION="2.8.1";
 const REPO_URL="https://github.com/Andresr-7/luca";
 const SOPORTE="luca.app.col@gmail.com";
 function nombreUsuario(){
@@ -1043,7 +1043,7 @@ function aplicarTema(t){const H=document.documentElement;H.classList.add("tema-c
   const r=document.documentElement;if(t==="light"||t==="dark")r.dataset.theme=t;else delete r.dataset.theme;
   try{localStorage.setItem("luca-tema",t)}catch(e){}
   const dark=t==="dark"||(t==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);
-  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute("content",dark?"#000000":"#F5F5F7"));
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute("content",dark?"#04060E":"#EEF2FF"));
   document.querySelectorAll("#temaSeg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.tema===t));
 }
 aplicarTema(temaGuardado());
