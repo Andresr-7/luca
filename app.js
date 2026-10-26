@@ -968,7 +968,7 @@ $("#fCat").onsubmit=async e=>{e.preventDefault();const n=$("#catNom").value.trim
 document.querySelectorAll("#app input").forEach(i=>i.setAttribute("autocomplete","off"));
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(f)leerRespaldo(f);e.target.value=""});
 /* ---------- Tu cuenta ---------- */
-const APP_VERSION="3.0.0";
+const APP_VERSION="3.1.0";
 const REPO_URL="https://github.com/Andresr-7/luca";
 const SOPORTE="luca.app.col@gmail.com";
 function nombreUsuario(){
@@ -1150,3 +1150,5 @@ async function vincSheet(){
       if(error){toast("No se pudo desvincular.");return}toast("Cuenta desvinculada");const u=await sb.auth.getUser();if(u&&u.data&&u.data.user)user=u.data.user;vincSheet()});
   });
 }
+
+$("#navAdd")&&($("#navAdd").onclick=()=>$("#fab").click());

@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.1.0 — 2026-10-26
+- iOS navigation bar: plain blue glyph buttons (chat, +, privacy) above a 34 pt large title; greeting in sentence case instead of an uppercase eyebrow.
+- No floating action button on phones: "+" lives in the nav bar like iOS apps.
+- Status labels are text, not colored pills; no emoji or decorative flame; sparkle icon replaced by a chat bubble.
+- Payment warnings use a normal white card (color only on the dates); card buttons are rounded rectangles; "add" buttons are plain blue text.
+
 ## 3.0.0 — 2026-10-26 · Pure iOS look
 - Removed the glass/aurora theme: no backdrop blur, no animated gradients, no purple or lime accents.
 - iOS system palette: grouped background (#F2F2F7 / black), flat white or #1C1C1E cards, system blue, hairline separators, solid tab bar, gray initials avatar like Contacts.

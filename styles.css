@@ -962,3 +962,39 @@ body:has(#auth:not([hidden])){background:var(--canvas)!important}
 button.lap::after,button.primary.lap::after{background:conic-gradient(from var(--lap),transparent 0 70%,rgba(255,255,255,.9) 85%,transparent 100%)!important}
 .avatar-btn,.avatar{background:linear-gradient(180deg,#A5ABB8,#858994)!important;color:#fff}
 .pro-badge{background:var(--ink)!important;color:var(--canvas)!important}
+
+/* ---------- v3.1: detalles de iOS (fuera rasgos "de IA") ---------- */
+/* Barra de navegación: título grande, saludo discreto, botones como glifos azules sin fondo */
+#monthLabel{text-transform:none!important;letter-spacing:0!important;font-size:15px!important;font-weight:400!important;color:var(--mute)!important;opacity:1!important}
+.top-acts .icon-btn{background:transparent!important;color:var(--primary)!important;width:36px;height:36px;min-height:36px;box-shadow:none!important}
+.top-acts .icon-btn:active{opacity:.4;transform:none}
+#syncChip{background:transparent!important;color:var(--mute)!important;padding:0;font-weight:400}
+/* En iPhone no hay botón flotante: el + vive arriba a la derecha */
+@media (max-width:959px){.fab{display:none!important}}
+@media (min-width:960px){.nav-add{display:none!important}}
+/* Etiquetas: texto, no píldoras de colores */
+.chip,.pill,.tag,.racha{background:transparent!important;padding:0!important;border-radius:0!important;font-weight:500!important;font-size:13px!important;box-shadow:none!important}
+.chip{color:var(--mute)!important}.chip.in{color:var(--mute)!important}
+.pill.verde{color:var(--pos)!important}.pill.amarillo{color:#C93400!important}.pill.rojo{color:var(--neg)!important}
+.racha{color:var(--mute)!important}.racha svg{display:none}
+/* Avisos: tarjeta blanca normal; el color solo en el ícono y la fecha */
+.aviso{background:var(--surface)!important}
+/* Botones de acción dentro de tarjetas: rectángulo redondeado, no cápsula */
+.card button,.panel button:not(.switch):not(.x):not(.pw-eye),.sheet button.primary,.sheet .ghost,.hero button{border-radius:12px!important}
+button.primary{font-weight:600;letter-spacing:-0.01em}
+/* Secundarios: texto azul sobre gris muy suave, como iOS */
+.card button:not(.primary),.hero .hbtns button:not(.primary){background:var(--fill-2)!important;color:var(--primary)!important}
+/* Accesos rápidos: íconos monocromos azules sobre gris, no cuadros de colores */
+.acc .ic,.acciones .acc>span:first-child{background:var(--fill-2)!important;color:var(--primary)!important}
+/* Separadores finos de 0.5 px como iOS */
+.list .item+.item,.ios-list .item+.item{border-top:.5px solid var(--line)}
+/* Tipografía de iOS: Large Title 34/41, Headline 17 semibold, Footnote 13 */
+h1#pageTitle{font-size:34px!important;font-weight:700!important;letter-spacing:.011em!important;line-height:1.2!important}
+h2{font-size:20px;font-weight:600}
+.hint{font-size:13px;color:var(--mute)}
+/* Barra de navegación de iOS: botones arriba a la derecha, título grande debajo */
+@media (max-width:959px){header.top{flex-direction:column-reverse;align-items:stretch;gap:2px;flex-wrap:nowrap}
+  .top-acts{justify-content:flex-end;gap:4px;margin-right:-6px}}
+/* Botones de "agregar" al final de una lista: texto azul, sin cápsula */
+button.add,.add-btn,button.ghost.wide,.block>button.ghost{background:transparent!important;border-radius:12px!important}
+#addAcct,#addCard,#addCuenta,#addTarjeta,[id^="add"]:not(.primary){background:transparent!important;color:var(--primary)!important;box-shadow:none!important}
