@@ -1026,3 +1026,16 @@ input.raw[type=checkbox]{-webkit-appearance:none;appearance:none;width:22px!impo
 input.raw[type=checkbox]:checked{background:var(--primary)!important;border-color:var(--primary)!important}
 input.raw[type=checkbox]:checked::after{content:"";position:absolute;left:6.5px;top:3px;width:5px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
 label.check:has(>input.raw){justify-content:flex-start}label.check:has(>input.raw)>input{order:0}
+
+/* ---------- v3.3: escanear recibos ---------- */
+.scan-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:44px;border-radius:12px!important;background:var(--fill-2)!important;color:var(--primary)!important;font-weight:600}
+.rc-prog{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-radius:12px;background:var(--fill-2);font-size:15px}
+.rc-prog i{display:block;height:4px;border-radius:2px;background:rgba(120,120,128,.2);overflow:hidden}
+.rc-prog b{display:block;height:100%;background:var(--primary);transform-origin:left;transform:scaleX(.03);transition:transform .3s ease}
+.rc-card{border-radius:12px;background:var(--fill-2);padding:4px 14px 10px}
+.rc-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:10px 0 6px;flex-wrap:wrap}
+.rc-head b{font-size:17px}.rc-ok{color:var(--pos);font-size:13px;font-weight:500}.rc-warn{color:#C93400;font-size:13px;font-weight:500}
+.rc-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:.5px solid var(--line);font-size:15px}
+.rc-row span{color:var(--mute)}.rc-row b{font-weight:500;text-align:right;font-variant-numeric:tabular-nums}
+.rc-row.rc-total b{font-weight:700;font-size:17px}
+.rc-card .hint{margin:8px 0 0}

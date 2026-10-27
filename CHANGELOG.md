@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.3.0 — 2026-10-26 · Receipt scanning
+- "Escanear recibo" in Nuevo gasto: on-device OCR (Tesseract, Spanish, self-hosted, loaded only on first use, ~2 s per receipt) — the photo never leaves the phone.
+- Parser tuned for Colombian receipts: total (avoids subtotal, VAT totals, cash given and change), subtotal, IVA/INC, voluntary tip, discount, merchant (known chains map to a category), NIT, invoice number, date and time, payment method, card brand and last 4 digits, item count.
+- Checks that subtotal + taxes + tip − discount equals the total and says so; fills amount, note, date, category and payment method.
+- Image prep before reading: EXIF rotation, upscaling, grayscale and contrast stretch.
+- 3 free scans a month, unlimited with Luca Pro. End-to-end test with a real OCR pass on a fixture receipt.
+
 ## 3.2.0 — 2026-10-26
 - Light mode only (iOS light appearance), even on phones set to dark; theme picker removed.
 - Checkboxes are iOS switches (UISwitch look and spring); terms acceptance uses the iOS selection circle.

@@ -81,5 +81,14 @@ const w=(p,ms=300)=>p.waitForTimeout(ms);
   await p.evaluate(()=>vincSheet());await w(p,500);
   T("cuentas vinculadas",(await p.textContent("#sheetBody")).includes("Google")&&(await p.textContent("#sheetBody")).includes("Apple"));
   await p.evaluate(()=>closeSheet());await w(p,300);
+  // Escanear recibo (OCR real dentro del navegador)
+  await p.evaluate(()=>gastoSheet());await w(p,500);
+  await p.setInputFiles("#gScanFile",require("path").join(__dirname,"fixtures","recibo.jpg"));
+  await p.waitForSelector(".rc-card, #gRecibo .hint",{timeout:90000});
+  const rc=await p.evaluate(()=>({v:$("#gVal").value,n:$("#gNota").value,f:$("#gFecha").value,ok:!!document.querySelector(".rc-ok")}));
+  T("recibo: total",rc.v==="$\u00a022.500",JSON.stringify(rc));T("recibo: comercio y fecha",rc.n==="Exito"&&rc.f==="2026-10-20",JSON.stringify(rc));T("recibo: cuentas cuadran",rc.ok);
+  const pr=await p.evaluate(()=>leerFactura("RESTAURANTE LA PUERTA FALSA\nNIT: 830.123.456-1\nFecha 18/10/26 13:05\nSUBTOTAL 60.000\nIMPOCONSUMO 8% 4.800\nSERVICIO VOLUNTARIO 10% 6.000\nTOTAL 70.800\nNEQUI"));
+  T("recibo: propina e impuesto",pr.total===70800&&pr.propina===6000&&pr.iva===4800&&pr.cuadra&&pr.pago==="Nequi",JSON.stringify(pr));
+  await p.evaluate(()=>closeSheet());await w(p,300);
   T("no JavaScript errors",p.errs.filter(e=>!/fetching the script/.test(e)).length===0,p.errs.join(" | "));H.done();
   await b.close()})();
