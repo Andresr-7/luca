@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.4.0 — 2026-10-26
+- Live receipt scanning: full-screen camera, recognized words outlined on the video, Total/IVA/Comercio/Fecha chips turn green as they are found, lines accumulate (deduplicated) while you move down a long receipt; vibrates and highlights "Listo" when the math checks out. Auto-stops after 60 s. "Choose a photo" stays as an option and as the fallback without a camera.
+
 ## 3.3.0 — 2026-10-26 · Receipt scanning
 - "Escanear recibo" in Nuevo gasto: on-device OCR (Tesseract, Spanish, self-hosted, loaded only on first use, ~2 s per receipt) — the photo never leaves the phone.
 - Parser tuned for Colombian receipts: total (avoids subtotal, VAT totals, cash given and change), subtotal, IVA/INC, voluntary tip, discount, merchant (known chains map to a category), NIT, invoice number, date and time, payment method, card brand and last 4 digits, item count.

@@ -681,7 +681,7 @@ function gastoSheet(g,pre){
   const acct=()=>{const k=key();return k.startsWith("c:")?S.cuentas.find(x=>x.id===k.slice(2)):null};
   openSheet(isNew?"Nuevo gasto":"Editar gasto",`<form id="fg">
     ${isNew?`<label>Escríbelo como hablas<input id="gTexto" placeholder="Ej. almuerzo 18 mil nequi" autocomplete="off" spellcheck="false"><span class="hint">Luca llena los campos por ti. Revisa y guarda.</span></label>
-    <button type="button" class="scan-btn" id="gScan"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.6-2.4h6.8L17 8h3v11H4z"/><circle cx="12" cy="13.2" r="3.6"/></svg><span>Escanear recibo</span></button><input type="file" id="gScanFile" accept="image/*" capture="environment" hidden>
+    <button type="button" class="scan-btn" id="gScan"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.6-2.4h6.8L17 8h3v11H4z"/><circle cx="12" cy="13.2" r="3.6"/></svg><span>Escanear recibo</span></button><button type="button" class="ghost scan-foto" id="gScanFoto">o elegir una foto</button><input type="file" id="gScanFile" accept="image/*" hidden>
     <div id="gRecibo" hidden></div>`:""}
     <label>Pagado con<select id="gMedio">${opts.map(o=>`<option value="${esc(o.k)}" ${o.k===sel?"selected":""}>${esc(o.l)}</option>`).join("")}</select></label>
     <div class="cats seg" id="gCur" hidden><button type="button" data-cur="cop">En pesos (COP)</button><button type="button" data-cur="usd">En dólares (US$)</button></div>
@@ -720,17 +720,20 @@ function gastoSheet(g,pre){
     // Escanear recibo: lee la foto en el celular y llena el gasto
     let recibo=null;
     if($("#gScan")){const box=$("#gRecibo");
-      $("#gScan").onclick=()=>{if(typeof puedeEscanear!=="function")return;if(!puedeEscanear()){toast("Usaste tus 3 recibos gratis de este mes. Con Luca Pro son ilimitados.");if(typeof proSheet==="function")setTimeout(proSheet,600);return}$("#gScanFile").click()};
+      $("#gScan").onclick=()=>{if(typeof puedeEscanear!=="function")return;if(!puedeEscanear()){toast("Usaste tus 3 recibos gratis de este mes. Con Luca Pro son ilimitados.");if(typeof proSheet==="function")setTimeout(proSheet,600);return}if(typeof camaraDisponible==="function"&&camaraDisponible()){escaneoEnVivo(r=>{if(r)aplicarRecibo(r)}).catch(()=>$("#gScanFile").click())}else $("#gScanFile").click()};
+      $("#gScanFoto").onclick=()=>{if(!puedeEscanear()){$("#gScan").click();return}$("#gScanFile").click()};
+      const aplicarRecibo=r=>{box.hidden=false;
+          recibo={comercio:r.comercio||null,nit:r.nit||null,factura:r.factura||null,subtotal:r.subtotal,iva:r.iva,propina:r.propina,descuento:r.descuento,hora:r.hora||null,pago:r.pago||null,ultimos4:r.ultimos4||null,productos:r.productos||null,cuadra:r.cuadra};
+          if(r.total){if(cur!=="cop")setCur("cop");inp.value=fmt(Math.round(r.total))}
+          if(r.comercio)$("#gNota").value=r.comercio;if(r.fecha)$("#gFecha").value=r.fecha;if(r.categoria)pickCat(r.categoria);
+          const mk=medioDeRecibo(r,opts);if(mk&&opts.some(o=>o.k===mk)){$("#gMedio").value=mk;syncMedio()}
+          box.innerHTML=fichaRecibo(r);vibrar(12)};
       $("#gScanFile").onchange=async e=>{const f=e.target.files&&e.target.files[0];e.target.value="";if(!f)return;
         box.hidden=false;box.innerHTML='<div class="rc-prog"><span id="rcTxt">Preparando la foto…</span><i><b id="rcBar"></b></i></div>';
         const av=(t,p)=>{const x=$("#rcTxt"),y=$("#rcBar");if(x)x.textContent=t;if(y)y.style.transform=`scaleX(${Math.max(.03,p)})`};
         try{const r=await leerRecibo(f,av);contarEscaneo();
           if(!r.total&&!r.comercio){box.innerHTML='<p class="hint">No pude leer este recibo. Prueba con más luz, la factura completa y sin arrugas.</p>';vibrar([20,40,20]);return}
-          recibo={comercio:r.comercio||null,nit:r.nit||null,factura:r.factura||null,subtotal:r.subtotal,iva:r.iva,propina:r.propina,descuento:r.descuento,hora:r.hora||null,pago:r.pago||null,ultimos4:r.ultimos4||null,productos:r.productos||null,cuadra:r.cuadra};
-          if(r.total){if(cur!=="cop")setCur("cop");inp.value=fmt(Math.round(r.total))}
-          if(r.comercio)$("#gNota").value=r.comercio;if(r.fecha)$("#gFecha").value=r.fecha;if(r.categoria)pickCat(r.categoria);
-          const mk=medioDeRecibo(r,opts);if(mk&&opts.some(o=>o.k===mk)){$("#gMedio").value=mk;syncMedio()}
-          box.innerHTML=fichaRecibo(r);vibrar(12);
+          aplicarRecibo(r);
         }catch(err){box.innerHTML='<p class="hint">No se pudo leer la foto en este dispositivo. Escribe el gasto a mano.</p>'}};
     }
     $("#gCur").onclick=e=>{const b=e.target.closest("button");if(b&&b.dataset.cur!==cur)setCur(b.dataset.cur)};
@@ -987,7 +990,7 @@ $("#fCat").onsubmit=async e=>{e.preventDefault();const n=$("#catNom").value.trim
 document.querySelectorAll("#app input").forEach(i=>i.setAttribute("autocomplete","off"));
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(f)leerRespaldo(f);e.target.value=""});
 /* ---------- Tu cuenta ---------- */
-const APP_VERSION="3.3.0";
+const APP_VERSION="3.4.0";
 const REPO_URL="https://github.com/Andresr-7/luca";
 const SOPORTE="luca.app.col@gmail.com";
 function nombreUsuario(){

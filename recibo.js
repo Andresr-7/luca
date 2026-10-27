@@ -146,3 +146,44 @@ async function leerRecibo(file,avance){
   avance("Leyendo el recibo…",.35);const {data}=await w.recognize(canvas);
   avance("Listo",1);return leerFactura(data.text||"");
 }
+
+/* ---------- Escaneo en vivo con la cámara ----------
+   Lee un cuadro cada vez que el lector termina el anterior, marca las palabras sobre el video
+   y va sumando las líneas nuevas mientras bajas por un recibo largo. */
+const camaraDisponible=()=>!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
+async function escaneoEnVivo(alTerminar){
+  const ov=document.createElement("div");ov.id="liveScan";ov.setAttribute("role","dialog");ov.setAttribute("aria-label","Escanear recibo");
+  ov.innerHTML=`<video playsinline muted autoplay></video><canvas class="ls-boxes"></canvas>
+    <div class="ls-top"><div class="ls-chips">
+      <span data-k="total">Total</span><span data-k="iva">IVA</span><span data-k="comercio">Comercio</span><span data-k="fecha">Fecha</span></div>
+      <p class="ls-msg">Apunta al recibo. Si es largo, baja despacio.</p></div>
+    <div class="ls-bottom"><button type="button" class="ls-cancel">Cancelar</button><button type="button" class="ls-ok" disabled>Listo</button></div>`;
+  document.body.appendChild(ov);requestAnimationFrame(()=>ov.classList.add("on"));
+  const v=ov.querySelector("video"),cv=ov.querySelector(".ls-boxes"),cx=cv.getContext("2d"),msg=ov.querySelector(".ls-msg"),okB=ov.querySelector(".ls-ok");
+  let stream=null,vivo=true,acum=[],vistos=new Set(),ult=null,listoAvisado=false;
+  const cerrar=r=>{vivo=false;clearTimeout(tope);if(stream)stream.getTracks().forEach(t=>t.stop());ov.classList.remove("on");setTimeout(()=>ov.remove(),250);alTerminar(r||null)};
+  ov.querySelector(".ls-cancel").onclick=()=>cerrar(null);okB.onclick=()=>{if(ult&&ult.total){contarEscaneo();cerrar(ult)}};
+  const tope=setTimeout(()=>{if(vivo){msg.textContent=ult&&ult.total?"Toca Listo para usar lo que leí.":"No logré leerlo. Prueba con más luz o toma una foto.";if(!(ult&&ult.total))setTimeout(()=>vivo&&cerrar(null),2500)}},60000);
+  try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1920},height:{ideal:1080}},audio:false});v.srcObject=stream;await v.play()}
+  catch(e){cerrar(null);throw e}
+  msg.textContent="Cargando el lector…";const w=await ocrListo(()=>{});if(!vivo)return;msg.textContent="Apunta al recibo. Si es largo, baja despacio.";
+  const marco=document.createElement("canvas"),mx=marco.getContext("2d",{willReadFrequently:true});
+  const pinta=(words,f)=>{const W=cv.width=ov.clientWidth*devicePixelRatio,H=cv.height=ov.clientHeight*devicePixelRatio;cx.clearRect(0,0,W,H);
+    const s=Math.max(W/v.videoWidth,H/v.videoHeight),ox=(W-v.videoWidth*s)/2,oy=(H-v.videoHeight*s)/2;
+    cx.lineWidth=2*devicePixelRatio;cx.strokeStyle="rgba(10,132,255,.9)";cx.fillStyle="rgba(10,132,255,.18)";
+    for(const wd of words){const b=wd.bbox,x=ox+b.x0/f*s,y=oy+b.y0/f*s,ww=(b.x1-b.x0)/f*s,hh=(b.y1-b.y0)/f*s;cx.beginPath();cx.roundRect?cx.roundRect(x,y,ww,hh,4*devicePixelRatio):cx.rect(x,y,ww,hh);cx.fill();cx.stroke()}};
+  const chips=r=>{for(const el of ov.querySelectorAll(".ls-chips span")){const k=el.dataset.k,val=r[k];const ok=val!=null&&val!=="";el.classList.toggle("ok",ok);
+      el.textContent=({total:"Total",iva:"IVA",comercio:"Comercio",fecha:"Fecha"})[k]+(ok?": "+(k==="total"||k==="iva"?fmt(Math.round(val)):k==="fecha"?val.split("-").reverse().slice(0,2).join("/"):val):"")}};
+  while(vivo){
+    if(v.readyState<2){await new Promise(r=>setTimeout(r,100));continue}
+    const f=Math.min(1,1280/Math.max(v.videoWidth,v.videoHeight));marco.width=Math.round(v.videoWidth*f);marco.height=Math.round(v.videoHeight*f);
+    mx.filter="grayscale(1) contrast(1.5)";mx.drawImage(v,0,0,marco.width,marco.height);
+    let data;try{({data}=await w.recognize(marco,{},{blocks:true,text:true}))}catch(e){break}
+    if(!vivo)break;
+    const lines=[],words=[];for(const bl of data.blocks||[])for(const pa of bl.paragraphs||[])for(const li of pa.lines||[]){if(li.confidence>45&&li.text.trim().length>2)lines.push(li.text.trim());for(const wd of li.words||[])if(wd.confidence>55&&wd.text.trim().length>1)words.push(wd)}
+    pinta(words,f);
+    for(const l of lines){const k=sinTildes(l).toUpperCase().replace(/[^A-Z0-9]/g,"");if(k.length>2&&!vistos.has(k)){vistos.add(k);acum.push(l)}}
+    if(acum.length){ult=leerFactura(acum.join("\n"));chips(ult);okB.disabled=!ult.total;
+      if(ult.total&&ult.cuadra&&!listoAvisado){listoAvisado=true;try{navigator.vibrate&&navigator.vibrate([12,40,12])}catch(e){}msg.textContent="Las cuentas cuadran. Toca Listo.";okB.classList.add("pulse")}}
+  }
+}
