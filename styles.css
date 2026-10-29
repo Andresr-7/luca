@@ -1055,3 +1055,17 @@ label.check:has(>input.raw){justify-content:flex-start}label.check:has(>input.ra
 .ls-ok.pulse{background:#34C759!important;color:#fff!important}
 .scan-foto{width:100%;font-size:15px;min-height:36px;margin-top:-6px}
 .ls-msg{display:inline-block;background:rgba(0,0,0,.6);padding:6px 10px;border-radius:8px}
+
+/* ---------- v3.5: panel de desarrollador ---------- */
+.admin-list{margin-top:12px}
+.dv-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dv-kpi{background:var(--fill-2);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:2px}
+.dv-kpi b{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}.dv-kpi span{font-size:12px;color:var(--mute)}
+.dv-h{font-size:17px;font-weight:600;margin:8px 0 0}
+.dv-user,.dv-env{display:flex;align-items:center;gap:10px;padding:10px 14px}
+.dv-user+.dv-user,.dv-env+.dv-env{border-top:.5px solid var(--line)}
+.dv-u-main,.dv-env{flex:1;min-width:0;display:flex;flex-direction:column}.dv-env{align-items:flex-start}
+.dv-u-main b{font-size:15px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dv-u-main small,.dv-env small{font-size:12px;color:var(--mute)}
+.dv-user select{width:auto;min-height:34px;font-size:14px;padding:4px 8px}
+textarea{font:inherit;font-size:17px;width:100%;border-radius:10px;padding:11px 14px;resize:vertical;color:var(--ink)}

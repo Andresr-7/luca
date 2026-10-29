@@ -1,11 +1,11 @@
 {
   "name": "luca",
-  "version": "3.4.0",
+  "version": "3.5.0",
   "private": true,
   "description": "Luca — personal finance PWA for Colombian paychecks, credit cards in pesos and dollars, and spending.",
   "license": "MIT",
   "scripts": {
-    "check": "node --check app.js && node --check extras.js && node --check pro.js && node --check asistente.js && node --check recibo.js && node --check boot.js && node --check i18n.js && node --check i18n-en.js && node --check sw.js",
+    "check": "node --check app.js && node --check extras.js && node --check pro.js && node --check asistente.js && node --check recibo.js && node --check admin.js && node --check boot.js && node --check i18n.js && node --check i18n-en.js && node --check sw.js",
     "test": "npm run check && node tests/auth.test.js && node tests/features.test.js",
     "serve": "npx --yes serve -l 5173 ."
   },

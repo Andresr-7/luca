@@ -14,6 +14,7 @@ window.CONFIG = {
   // Precio mensual de Luca Pro que se muestra en la app (COP).
   OTP_LEN: 8,          // dígitos del código que llega al correo (Supabase → Auth → Email OTP length)
   PRECIO_PRO: 15900,
+  VAPID_PUBLIC: "BBLss-mh3qLxbMOmlEKmaPhvj4YJjdbFuR8q-jaq_bP1u1-gSlmEdTFYufkxrmTTvKowuqIN8lQoz2Fggz_l1e4", // clave pública de notificaciones (la privada vive solo en Supabase)
 
   // Límites por plan. null = sin límite. Ejemplo para el futuro: free: { tarjetas: 3, cuentas: 2, metas: 1 }
   PLANES: {

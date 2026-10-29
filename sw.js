@@ -1,7 +1,7 @@
 /* Service worker: deja la app instalable y abre aunque no haya internet.
    Cuando cambies archivos, sube el número de CACHE para que los celulares tomen la versión nueva. */
-const CACHE = "luca-v37";
-const SHELL = ["./", "index.html", "styles.css", "i18n-en.js", "i18n.js", "app.js", "extras.js", "pro.js", "asistente.js", "recibo.js", "boot.js", "vendor/supabase-2.45.4.js", "config.js", "logo/logo.svg", "fonts/inter.woff2", "manifest.webmanifest", "privacidad.html", "terminos.html", "eliminar-cuenta.html",
+const CACHE = "luca-v38";
+const SHELL = ["./", "index.html", "styles.css", "i18n-en.js", "i18n.js", "app.js", "extras.js", "pro.js", "asistente.js", "recibo.js", "admin.js", "boot.js", "vendor/supabase-2.45.4.js", "config.js", "logo/logo.svg", "fonts/inter.woff2", "manifest.webmanifest", "privacidad.html", "terminos.html", "eliminar-cuenta.html",
   "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png", "icons/favicon-32.png"];
 const CDN = ["cdn.jsdelivr.net", "fonts.googleapis.com", "fonts.gstatic.com"];
 
@@ -51,4 +51,10 @@ self.addEventListener("notificationclick", e => {
     for (const w of ws) if ("focus" in w) return w.focus();
     return self.clients.openWindow("./");
   }));
+});
+
+/* Notificaciones push enviadas desde el panel de desarrollador */
+self.addEventListener("push", e => {
+  let d = {}; try { d = e.data ? e.data.json() : {}; } catch (x) { d = { title: "Luca", body: e.data ? e.data.text() : "" }; }
+  e.waitUntil(self.registration.showNotification(d.title || "Luca", { body: d.body || "", icon: "icons/icon-192.png", badge: "icons/icon-192.png", tag: "luca-push-" + Date.now(), data: { url: d.url || "./" } }));
 });

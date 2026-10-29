@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.5.0 — 2026-10-28
+- Push notifications: the app asks once (after 20 s of use) or from Más → "Activar notificaciones", stores the Web Push subscription in `push_subs` (RLS: own rows only); service worker shows incoming pushes.
+- Developer panel (Más → Panel de desarrollador, only for `rol = desarrollador`): KPIs (users, active and new in 7 days, Pro, push subscribers, expenses), send a push to everyone, Pro, normal users or one email, last sends, searchable user list with one-tap plan changes (Pro 30 days / 1 year / no expiry, developer, normal).
+- Backend: `supabase/push-admin.sql` (security-definer RPCs gated by `es_dev()`), Edge Function `send-push` (verifies the caller is a developer, sends with VAPID, prunes dead subscriptions, logs each send).
+
 ## 3.4.0 — 2026-10-26
 - Live receipt scanning: full-screen camera, recognized words outlined on the video, Total/IVA/Comercio/Fecha chips turn green as they are found, lines accumulate (deduplicated) while you move down a long receipt; vibrates and highlights "Listo" when the math checks out. Auto-stops after 60 s. "Choose a photo" stays as an option and as the fallback without a camera.
 

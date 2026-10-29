@@ -319,7 +319,7 @@ async function start(u){
   if(/[?&]code=|access_token|error_description|type=recovery/.test(location.search+location.hash))history.replaceState(null,"",location.pathname);
   let ok=false;
   try{await loadAll();ok=true;setSync(navigator.onLine===false?"Sin conexión":"Sincronizado")}catch(e){setSync("Sin conexión");toast("No se pudieron cargar tus datos. Revisa tu conexión.")}
-  loadPerfil().then(render).catch(()=>{});
+  loadPerfil().then(()=>{render();if(typeof pushAlEntrar==="function")pushAlEntrar()}).catch(()=>{});
   subscribe();actualizarTRM();
   if(pendingRecovery){pendingRecovery=false;nuevaClaveSheet()}
   else if(ok)maybeOnboard();
@@ -990,7 +990,7 @@ $("#fCat").onsubmit=async e=>{e.preventDefault();const n=$("#catNom").value.trim
 document.querySelectorAll("#app input").forEach(i=>i.setAttribute("autocomplete","off"));
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(f)leerRespaldo(f);e.target.value=""});
 /* ---------- Tu cuenta ---------- */
-const APP_VERSION="3.4.0";
+const APP_VERSION="3.5.0";
 const REPO_URL="https://github.com/Andresr-7/luca";
 const SOPORTE="luca.app.col@gmail.com";
 function nombreUsuario(){
@@ -1034,6 +1034,7 @@ function renderCuenta(){
     try{localStorage.removeItem(cacheKey())}catch(e){}
     await sb.auth.signOut();stop();toast("Tu cuenta y tus datos fueron eliminados");
   },"Toca otra vez: se borra todo y no se puede deshacer");
+  if(typeof renderAdminFilas==="function")renderAdminFilas();
 }
 function nombreSheet(){
   openSheet("Tu nombre",`<form id="fNom" class="stack" novalidate>
