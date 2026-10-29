@@ -73,14 +73,20 @@ const b64=a=>btoa(String.fromCharCode(...new Uint8Array(a))).replace(/\+/g,"-").
 const unb64=s=>Uint8Array.from(atob(s.replace(/-/g,"+").replace(/_/g,"/")),c=>c.charCodeAt(0));
 const rnd=n=>crypto.getRandomValues(new Uint8Array(n));
 const lockId=()=>{try{return localStorage.getItem(LOCK_KEY)}catch(e){return null}};
-async function bioDisponible(){try{return !!(window.PublicKeyCredential&&await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable())}catch(e){return false}}
+/* En la app de Android (Capacitor) se usa la huella nativa; en web, WebAuthn */
+const BioNativa=()=>window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()&&Capacitor.Plugins&&Capacitor.Plugins.BiometricAuthNative;
+async function bioNativaOk(){try{const r=await BioNativa().checkBiometry();return !!(r&&(r.isAvailable||r.deviceIsSecure))}catch(e){return false}}
+async function bioNativaAuth(){await BioNativa().internalAuthenticate({reason:"Desbloquea Luca",title:"Luca",subtitle:"Usa tu huella o tu rostro",cancelTitle:"Cancelar",allowDeviceCredential:true,androidTitle:"Luca",androidSubtitle:"Usa tu huella o tu rostro",androidConfirmationRequired:false})}
+async function bioDisponible(){if(BioNativa())return bioNativaOk();try{return !!(window.PublicKeyCredential&&await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable())}catch(e){return false}}
 async function activarBloqueo(){
+  if(BioNativa()){try{await bioNativaAuth();localStorage.setItem(LOCK_KEY,"nativo");toast("Bloqueo activado")}catch(e){toast("No se pudo activar. Revisa que tu celular tenga huella configurada.")}renderSeguridad();return}
   try{const c=await navigator.credentials.create({publicKey:{challenge:rnd(32),rp:{name:"Luca"},user:{id:rnd(16),name:"luca",displayName:"Luca"},
       pubKeyCredParams:[{type:"public-key",alg:-7},{type:"public-key",alg:-257}],authenticatorSelection:{authenticatorAttachment:"platform",userVerification:"required",residentKey:"discouraged"},timeout:60000}});
     localStorage.setItem(LOCK_KEY,b64(c.rawId));toast("Bloqueo activado");}catch(e){toast("No se pudo activar. Revisa que tu celular tenga huella o Face ID configurado.")}
   renderSeguridad();
 }
 async function desbloquear(){
+  if(BioNativa()){try{await bioNativaAuth();$("#lockScreen")?.remove();vibrar(10);return true}catch(e){return false}}
   try{await navigator.credentials.get({publicKey:{challenge:rnd(32),allowCredentials:[{type:"public-key",id:unb64(lockId())}],userVerification:"required",timeout:60000}});
     $("#lockScreen")?.remove();vibrar(10);return true}catch(e){return false}
 }

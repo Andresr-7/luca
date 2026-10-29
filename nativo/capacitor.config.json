@@ -1,0 +1,11 @@
+{
+  "appId": "io.github.andresr7.luca",
+  "appName": "Luca",
+  "webDir": "www",
+  "server": {
+    "url": "https://andresr-7.github.io/luca/",
+    "androidScheme": "https",
+    "allowNavigation": ["andresr-7.github.io", "urlfdhmksnfnlaqnnemc.supabase.co"]
+  },
+  "android": { "backgroundColor": "#F2F2F7" }
+}

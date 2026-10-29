@@ -990,7 +990,7 @@ $("#fCat").onsubmit=async e=>{e.preventDefault();const n=$("#catNom").value.trim
 document.querySelectorAll("#app input").forEach(i=>i.setAttribute("autocomplete","off"));
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(f)leerRespaldo(f);e.target.value=""});
 /* ---------- Tu cuenta ---------- */
-const APP_VERSION="3.5.1";
+const APP_VERSION="3.6.0";
 const REPO_URL="https://github.com/Andresr-7/luca";
 const SOPORTE="luca.app.col@gmail.com";
 function nombreUsuario(){

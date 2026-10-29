@@ -23,3 +23,13 @@ if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWor
     const f=t=>{const d=t-prev;prev=t;if(d>34)lentos++;n++;if(t-t0<2000)requestAnimationFrame(f);else{const lite=lentos/n>.3||h.classList.contains("lite")&&lentos/n>.15;
       try{localStorage.setItem("luca-lite",lite?"1":"0")}catch(e){}h.classList.toggle("lite",lite)}};requestAnimationFrame(f)},800));
 })();
+
+/* App de Android: el botón atrás cierra hojas y vuelve a Resumen antes de salir */
+(()=>{const C=window.Capacitor;if(!(C&&C.isNativePlatform&&C.isNativePlatform()&&C.Plugins&&C.Plugins.App))return;
+  document.documentElement.classList.add("nativa");
+  C.Plugins.App.addListener("backButton",()=>{const sh=document.getElementById("sheetBack");
+    if(document.getElementById("liveScan")){document.querySelector("#liveScan .ls-cancel")?.click();return}
+    if(sh&&!sh.hidden&&typeof closeSheet==="function"){closeSheet();return}
+    const r=document.querySelector('nav.tabs [data-tab="resumen"]');if(r&&r.getAttribute("aria-current")!=="page"){r.click();return}
+    C.Plugins.App.exitApp()});
+})();
