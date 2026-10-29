@@ -1,14 +1,17 @@
 {
   "name": "luca-android",
   "private": true,
-  "version": "3.6.0",
+  "version": "3.7.0",
   "description": "Luca para Android (Capacitor): la app web de Luca dentro de una app nativa",
-  "scripts": { "sync": "cap sync android" },
+  "scripts": {
+    "sync": "cap sync android"
+  },
   "dependencies": {
     "@capacitor/android": "8.0.0",
     "@capacitor/app": "8.0.0",
     "@capacitor/cli": "8.0.0",
     "@capacitor/core": "8.0.0",
-    "@aparajita/capacitor-biometric-auth": "10.0.0"
+    "@aparajita/capacitor-biometric-auth": "10.0.0",
+    "@capacitor/push-notifications": "8.0.0"
   }
 }

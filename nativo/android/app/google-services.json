@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1019899334624",
+    "project_id": "luca-app-2292c",
+    "storage_bucket": "luca-app-2292c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1019899334624:android:87bae901c88dc208286585",
+        "android_client_info": {
+          "package_name": "io.github.andresr7.luca"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8ncN_mSFtYWh_MfNLSWYJ6v9J6aNm3_Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

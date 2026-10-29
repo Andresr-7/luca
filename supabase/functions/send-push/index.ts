@@ -7,6 +7,28 @@ import webpush from "npm:web-push@3.6.7";
 const CORS = { "Access-Control-Allow-Origin": "https://andresr-7.github.io", "Access-Control-Allow-Headers": "authorization, content-type, apikey, x-client-info", "Access-Control-Allow-Methods": "POST, OPTIONS" };
 const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...CORS, "Content-Type": "application/json" } });
 
+// ---- Firebase Cloud Messaging (app de Android). Secreto: FCM_SERVICE_ACCOUNT = JSON de la cuenta de servicio ----
+let fcmToken: { t: string; exp: number } | null = null;
+const b64url = (b: ArrayBuffer | string) => btoa(typeof b === "string" ? b : String.fromCharCode(...new Uint8Array(b))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+async function tokenFCM(sa: { client_email: string; private_key: string }) {
+  if (fcmToken && fcmToken.exp > Date.now() + 60000) return fcmToken.t;
+  const now = Math.floor(Date.now() / 1000);
+  const head = b64url(JSON.stringify({ alg: "RS256", typ: "JWT" })), claim = b64url(JSON.stringify({ iss: sa.client_email, scope: "https://www.googleapis.com/auth/firebase.messaging", aud: "https://oauth2.googleapis.com/token", iat: now, exp: now + 3600 }));
+  const pem = sa.private_key.replace(/-----[^-]+-----|\s/g, ""), der = Uint8Array.from(atob(pem), (c) => c.charCodeAt(0));
+  const key = await crypto.subtle.importKey("pkcs8", der, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key, new TextEncoder().encode(head + "." + claim));
+  const r = await fetch("https://oauth2.googleapis.com/token", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: "grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=" + head + "." + claim + "." + b64url(sig) });
+  const j = await r.json(); fcmToken = { t: j.access_token, exp: Date.now() + (j.expires_in ?? 3600) * 1000 }; return fcmToken.t;
+}
+async function enviarFCM(token: string, title: string, body: string, url: string): Promise<"ok" | "muerta" | "error"> {
+  const raw = Deno.env.get("FCM_SERVICE_ACCOUNT"); if (!raw) return "error";
+  const sa = JSON.parse(raw);
+  const r = await fetch(`https://fcm.googleapis.com/v1/projects/${sa.project_id}/messages:send`, { method: "POST", headers: { Authorization: "Bearer " + await tokenFCM(sa), "Content-Type": "application/json" },
+    body: JSON.stringify({ message: { token, notification: { title, body }, data: { url }, android: { priority: "HIGH", notification: { default_sound: true } } } }) });
+  if (r.ok) return "ok";
+  const t = await r.text(); return /UNREGISTERED|NOT_FOUND|INVALID_ARGUMENT/.test(t) ? "muerta" : "error";
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
@@ -38,6 +60,11 @@ Deno.serve(async (req) => {
   const payload = JSON.stringify({ title: titulo, body: cuerpo, url: b.url || "./" });
   let ok = 0, ko = 0; const muertas: number[] = [];
   await Promise.all((subs ?? []).map(async (s) => {
+    if (s.endpoint.startsWith("fcm:")) {
+      const r = await enviarFCM(s.endpoint.slice(4), titulo, cuerpo, b.url || "./");
+      if (r === "ok") ok++; else { ko++; if (r === "muerta") muertas.push(s.id); }
+      return;
+    }
     try { await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, payload, { TTL: 86400, urgency: "high" }); ok++; }
     catch (e) { ko++; const c = (e as { statusCode?: number }).statusCode; if (c === 404 || c === 410) muertas.push(s.id); }
   }));

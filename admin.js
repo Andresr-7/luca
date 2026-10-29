@@ -1,11 +1,23 @@
 /* Luca · Notificaciones push (suscripción) y panel de desarrollador */
 "use strict";
 const b64u=s=>{const p="=".repeat((4-s.length%4)%4),b=atob((s+p).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from(b,c=>c.charCodeAt(0))};
-const pushSoportado=()=>"serviceWorker" in navigator&&"PushManager" in window&&"Notification" in window&&!!(window.CONFIG&&CONFIG.VAPID_PUBLIC);
+/* En la app de Android las notificaciones van por Firebase (FCM); en web, por Web Push */
+const PushNativo=()=>window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()&&Capacitor.Plugins&&Capacitor.Plugins.PushNotifications;
+let pushNativoListo=false;
+async function suscribirNativo(pedir){const P=PushNativo();
+  let st=await P.checkPermissions();if(st.receive!=="granted"){if(!pedir)return "pendiente";st=await P.requestPermissions();if(st.receive!=="granted")return "denegado"}
+  if(!pushNativoListo){pushNativoListo=true;
+    P.addListener("registration",async t=>{if(user&&t&&t.value)await sb.from("push_subs").upsert({user_id:user.id,endpoint:"fcm:"+t.value,p256dh:"fcm",auth:"fcm"},{onConflict:"endpoint"})});
+    P.addListener("pushNotificationReceived",n=>toast((n.title?n.title+": ":"")+(n.body||"")));
+    P.addListener("pushNotificationActionPerformed",()=>{})}
+  await P.register();return "ok"}
+const permisoPush=async()=>{if(PushNativo()){try{return (await PushNativo().checkPermissions()).receive}catch(e){return "prompt"}}return "Notification" in window?Notification.permission:"denied"};
+const pushSoportado=()=>!!PushNativo()||"serviceWorker" in navigator&&"PushManager" in window&&"Notification" in window&&!!(window.CONFIG&&CONFIG.VAPID_PUBLIC);
 
 /* Guarda la suscripción de este celular en Supabase */
 async function suscribirPush(pedir){
   if(!pushSoportado()||!user)return "no";
+  if(PushNativo())return suscribirNativo(pedir);
   if(Notification.permission==="denied")return "denegado";
   if(Notification.permission!=="granted"){if(!pedir)return "pendiente";if(await Notification.requestPermission()!=="granted")return "denegado"}
   const reg=await navigator.serviceWorker.ready;
@@ -18,6 +30,7 @@ async function suscribirPush(pedir){
 /* Al entrar: si ya dio permiso, renueva en silencio; si no, lo pide una sola vez tras unos segundos de uso */
 function pushAlEntrar(){
   if(!pushSoportado())return;
+  if(PushNativo()){permisoPush().then(p=>{if(p==="granted")suscribirNativo(false).catch(()=>{});else{let ya=null;try{ya=localStorage.getItem("luca-push-pedido")}catch(e){}if(!ya)setTimeout(()=>{try{localStorage.setItem("luca-push-pedido","1")}catch(e){}suscribirNativo(true).catch(()=>{})},15000)}});return}
   if(Notification.permission==="granted"){suscribirPush(false).catch(()=>{});return}
   let ya=null;try{ya=localStorage.getItem("luca-push-pedido")}catch(e){}
   if(ya||Notification.permission==="denied")return;
@@ -69,7 +82,7 @@ async function panelDev(){
 /* Botones en Más: notificaciones para todos y panel solo para desarrolladores */
 function renderAdminFilas(){
   const el=$("#adminPanel");if(!el)return;
-  const pushTxt=!pushSoportado()?"":Notification.permission==="granted"?"Notificaciones activadas":"Activar notificaciones";
+  const pushTxt=!pushSoportado()?"":(!PushNativo()&&Notification.permission==="granted")?"Notificaciones activadas":"Activar notificaciones";
   el.innerHTML=(pushTxt?`<button type="button" class="item row-btn" id="aPush"><span class="main">${pushTxt}</span><span class="chev" aria-hidden="true">›</span></button>`:"")+
     (esDev()?'<button type="button" class="item row-btn" id="aDev"><span class="main">Panel de desarrollador</span><span class="chev" aria-hidden="true">›</span></button>':"");
   el.hidden=!el.innerHTML;
