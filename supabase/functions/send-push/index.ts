@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
   const payload = JSON.stringify({ title: titulo, body: cuerpo, url: b.url || "./" });
   let ok = 0, ko = 0; const muertas: number[] = [];
   await Promise.all((subs ?? []).map(async (s) => {
-    try { await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, payload, { TTL: 86400 }); ok++; }
+    try { await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, payload, { TTL: 86400, urgency: "high" }); ok++; }
     catch (e) { ko++; const c = (e as { statusCode?: number }).statusCode; if (c === 404 || c === 410) muertas.push(s.id); }
   }));
   if (muertas.length) await admin.from("push_subs").delete().in("id", muertas);

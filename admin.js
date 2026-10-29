@@ -41,6 +41,8 @@ async function panelDev(){
     <select data-mail="${esc(x.email)}" aria-label="Cambiar tipo de ${esc(x.email)}"><option value="">Cambiar…</option><option value="pro:30">Pro 30 días</option><option value="pro:365">Pro 1 año</option><option value="pro:">Pro sin vencer</option><option value="desarrollador:">Desarrollador</option><option value="normal:">Normal</option></select></div>`;
   $("#sheetBody").innerHTML=`<div class="stack">
     <div class="dv-kpis">${kpi(R.usuarios,"Usuarios")}${kpi(R.activos7,"Activos 7 días")}${kpi(R.nuevos7,"Nuevos 7 días")}${kpi(R.pro,"Pro")}${kpi(R.push,"Con push")}${kpi(R.gastos,"Gastos")}</div>
+    <div class="dv-diag" id="dvDiag">Revisando este celular…</div>
+    <button type="button" class="scan-btn" id="dvProbar">Probar notificación en este celular</button>
     <h3 class="dv-h">Enviar notificación</h3>
     <form id="fPush" class="stack">
       <label>Título<input id="pTit" maxlength="60" placeholder="Ej. Nueva función"></label>
@@ -50,6 +52,10 @@ async function panelDev(){
     ${(R.envios||[]).length?`<h3 class="dv-h">Últimos envíos</h3><div class="ios-list solo">${R.envios.map(e=>`<div class="dv-env"><b>${esc(e.titulo)}</b><small>${esc(e.publico)} · ${e.enviados} enviados${e.fallidos?" · "+e.fallidos+" fallidos":""} · ${new Date(e.creado).toLocaleDateString("es-CO")}</small></div>`).join("")}</div>`:""}
     <h3 class="dv-h">Usuarios (${U.length})</h3><input id="dvBus" placeholder="Buscar por correo" autocomplete="off">
     <div class="ios-list solo" id="dvLista">${U.map(fila).join("")}</div></div>`;
+  diagPush();
+  $("#dvProbar").onclick=async()=>{try{if(Notification.permission!=="granted"&&await Notification.requestPermission()!=="granted"){toast("Este celular tiene las notificaciones bloqueadas");return}
+    const reg=await navigator.serviceWorker.ready;await reg.showNotification("Prueba de Luca",{body:"Si ves esto, este celular puede mostrar notificaciones.",icon:"icons/icon-192.png",badge:"icons/icon-192.png",tag:"luca-prueba"});toast("Prueba enviada. Revisa la barra de notificaciones.")}
+    catch(e){toast("Este celular no pudo mostrar la notificación: "+(e.message||e))}};
   $("#dvBus").oninput=e=>{const q=e.target.value.toLowerCase();document.querySelectorAll(".dv-user").forEach(el=>el.hidden=!el.querySelector("b").textContent.toLowerCase().includes(q))};
   $("#dvLista").onchange=async e=>{const s=e.target.closest("select[data-mail]");if(!s||!s.value)return;const [t,d]=s.value.split(":");
     const {data,error}=await sb.rpc("admin_plan",{correo:s.dataset.mail,tipo:t,dias:d?+d:null});toast(error?"No se pudo cambiar":data);if(!error)panelDev()};
@@ -70,3 +76,17 @@ function renderAdminFilas(){
   $("#aPush")&&($("#aPush").onclick=async()=>{const r=await suscribirPush(true).catch(()=>"error");toast(r==="ok"?"Notificaciones activadas":r==="denegado"?"Las notificaciones están bloqueadas en los ajustes del celular":"No se pudieron activar");renderAdminFilas()});
   $("#aDev")&&($("#aDev").onclick=panelDev);
 }
+
+/* Diagnóstico: ¿este celular puede recibir push y está registrado? */
+async function diagPush(){const el=$("#dvDiag");if(!el)return;const L=[];
+  const sw="serviceWorker" in navigator,pm="PushManager" in window;
+  L.push("Soporte push: "+(sw&&pm?"sí":"no"));
+  L.push("Permiso: "+("Notification" in window?({granted:"permitido",denied:"bloqueado",default:"sin responder"})[Notification.permission]:"no disponible"));
+  const ios=/iPhone|iPad/.test(navigator.userAgent),inst=matchMedia("(display-mode: standalone)").matches||navigator.standalone;
+  if(ios&&!inst)L.push("En iPhone las notificaciones solo funcionan si abres Luca desde el ícono de la pantalla de inicio");
+  try{const reg=await navigator.serviceWorker.ready;const s=await reg.pushManager.getSubscription();
+    if(!s)L.push("Este celular no está registrado: toca Activar notificaciones");
+    else{const {data}=await sb.from("push_subs").select("id").eq("endpoint",s.endpoint).maybeSingle();L.push(data?"Registrado en Luca ✓":"Registrado en el celular pero no en Luca: toca Activar notificaciones");
+      L.push("Servicio: "+(/apple/.test(s.endpoint)?"Apple":/google|fcm/.test(s.endpoint)?"Google (Chrome/Android)":/mozilla/.test(s.endpoint)?"Firefox":/windows|wns/.test(s.endpoint)?"Windows":"otro"))}
+  }catch(e){L.push("No se pudo revisar: "+(e.message||e))}
+  el.innerHTML=L.map(x=>"<div>"+esc(x)+"</div>").join("")}

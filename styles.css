@@ -1069,3 +1069,4 @@ label.check:has(>input.raw){justify-content:flex-start}label.check:has(>input.ra
 .dv-u-main small,.dv-env small{font-size:12px;color:var(--mute)}
 .dv-user select{width:auto;min-height:34px;font-size:14px;padding:4px 8px}
 textarea{font:inherit;font-size:17px;width:100%;border-radius:10px;padding:11px 14px;resize:vertical;color:var(--ink)}
+.dv-diag{font-size:13px;color:var(--mute);background:var(--fill-2);border-radius:12px;padding:10px 14px;display:flex;flex-direction:column;gap:3px}
