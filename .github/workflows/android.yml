@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths: ["nativo/**", ".github/workflows/android.yml"]
 permissions:
-  contents: read
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,6 +21,11 @@ jobs:
       - name: Compilar paquete sin firmar
         working-directory: nativo/android
         run: chmod +x gradlew && ./gradlew --no-daemon bundleRelease
+      - name: Publicar paquete sin firmar en la rama build-android
+        run: |
+          mkdir out && cp nativo/android/app/build/outputs/bundle/release/*.aab out/luca-sin-firmar.aab
+          cd out && git init -q && git checkout -q -b build-android && git add . && git -c user.name=ci -c user.email=ci@luca commit -qm "build $GITHUB_SHA"
+          git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" build-android
       - uses: actions/upload-artifact@v4
         with:
           name: luca-android-sin-firmar
