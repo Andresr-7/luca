@@ -60,17 +60,17 @@ async function panelDev(){
       return `<h3 class="dv-h">Versiones</h3><div class="dv-kpis">${kpi(al,"Al día ("+APP_VERSION+")")}${kpi(con.length-al,"Desactualizados")}${kpi(V.length-con.length,"Sin abrir desde 3.9")}</div>
       <div class="dv-vers">${Object.entries(cnt).sort().reverse().map(([k,n])=>`<span class="${k.startsWith(APP_VERSION+" ")?"ok":"old"}">${esc(k)} <b>${n}</b></span>`).join("")}</div>
       <details class="dv-det"><summary>Ver por usuario</summary>${V.map(x=>`<div class="dv-vu"><span>${esc(x.email)}</span><span class="${x.version===APP_VERSION?"ok":"old"}">${x.version?esc(x.version+" · "+x.plataforma+(x.nativa?" (app "+x.nativa+")":"")):"—"}</span><small>${x.visto?new Date(x.visto).toLocaleDateString("es-CO",{day:"numeric",month:"short"}):""}</small></div>`).join("")}</details>`})():""}
-    <h3 class="dv-h">Dar Pro por correo</h3>
-    <form id="fPlan" class="dv-row"><input id="plMail" type="email" placeholder="correo@gmail.com" autocomplete="off"><select id="plTipo"><option value="pro:30">Pro 30 días</option><option value="pro:365">Pro 1 año</option><option value="pro:">Pro sin vencer</option><option value="normal:">Normal</option><option value="desarrollador:">Desarrollador</option></select><button class="primary sm" type="submit">Aplicar</button></form>
     <h3 class="dv-h">Aviso dentro de la app</h3>
     <p class="hint">Sale como tarjeta arriba en Resumen cuando abren Luca. No necesita permiso de notificaciones.</p>
-    <form id="fAviso" class="stack"><input id="avTit" maxlength="60" placeholder="Título, ej. Mantenimiento esta noche"><textarea id="avCue" maxlength="240" rows="2" placeholder="Mensaje"></textarea>
+    <form id="fAviso" class="stack" novalidate><input id="avTit" maxlength="60" placeholder="Título, ej. Mantenimiento esta noche"><textarea id="avCue" maxlength="240" rows="2" placeholder="Mensaje"></textarea>
       <select id="avPub"><option value="todos">Todos</option><option value="pro">Solo Pro</option><option value="normal">Solo normales</option></select>
       <button class="primary" type="submit">Publicar aviso</button><button type="button" class="ghost" id="avQuitar">Quitar avisos activos</button></form>
+    <h3 class="dv-h">Dar Pro por correo</h3>
+    <form id="fPlan" class="dv-row" novalidate><input id="plMail" type="text" inputmode="email" autocapitalize="off" placeholder="correo@gmail.com" autocomplete="off"><select id="plTipo"><option value="pro:30">Pro 30 días</option><option value="pro:365">Pro 1 año</option><option value="pro:">Pro sin vencer</option><option value="normal:">Normal</option><option value="desarrollador:">Desarrollador</option></select><button class="primary sm" type="submit">Aplicar</button></form>
     <div class="dv-diag" id="dvDiag">Revisando este celular…</div>
     <button type="button" class="scan-btn" id="dvProbar">Probar notificación en este celular</button>
     <h3 class="dv-h">Enviar notificación</h3>
-    <form id="fPush" class="stack">
+    <form id="fPush" class="stack" novalidate>
       <label>Título<input id="pTit" maxlength="60" placeholder="Ej. Nueva función"></label>
       <label>Mensaje<textarea id="pCue" maxlength="180" rows="3" placeholder="Ej. Ya puedes escanear recibos en vivo."></textarea></label>
       <label>Para<select id="pPub"><option value="todos">Todos</option><option value="pro">Solo Pro</option><option value="normal">Solo normales</option>${U.filter(x=>x.push).map(x=>`<option value="${esc(x.email)}">${esc(x.email)}</option>`).join("")}</select></label>
