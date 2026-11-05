@@ -46,7 +46,7 @@ const esDev=()=>typeof perfil!=="undefined"&&perfil&&perfil.rol==="desarrollador
 async function panelDev(){
   if(!esDev())return;
   openSheet("Panel de desarrollador",'<p class="hint">Cargando…</p>');
-  const [r,u,ac]=await Promise.all([sb.rpc("admin_resumen"),sb.rpc("admin_usuarios"),sb.rpc("admin_actividad")]);const A=(ac&&ac.data)||null;
+  const [r,u,ac,vs]=await Promise.all([sb.rpc("admin_resumen"),sb.rpc("admin_usuarios"),sb.rpc("admin_actividad"),sb.rpc("admin_versiones")]);const A=(ac&&ac.data)||null;const V=(vs&&!vs.error&&vs.data)||null;
   if(r.error||u.error){$("#sheetBody").innerHTML='<p class="hint">No se pudo cargar. ¿Ya ejecutaste supabase/push-admin.sql en Supabase?</p>';return}
   const R=r.data||{},U=u.data||[];
   const kpi=(n,t)=>`<div class="dv-kpi"><b>${n??0}</b><span>${t}</span></div>`;
@@ -56,6 +56,10 @@ async function panelDev(){
     <div class="dv-kpis">${kpi(R.usuarios,"Usuarios")}${kpi(R.activos7,"Activos 7 días")}${kpi(R.nuevos7,"Nuevos 7 días")}${kpi(R.pro,"Pro")}${kpi(R.push,"Con push")}${kpi(R.gastos,"Gastos")}</div>
     ${A?`<h3 class="dv-h">Actividad</h3><div class="dv-kpis">${kpi(A.gastos_hoy,"Gastos hoy")}${kpi(A.gastos_7,"Gastos 7 días")}${kpi(A.recibos,"Recibos escaneados")}</div>
     <div class="dv-bars">${(A.por_dia||[]).map(d=>{const mx=Math.max(1,...A.por_dia.map(x=>x.n));return `<div class="dv-bar"><i style="height:${Math.round(d.n/mx*100)}%"></i><b>${d.n}</b><span>${d.dia}</span></div>`}).join("")}</div>`:""}
+    ${V?(()=>{const con=V.filter(x=>x.version),al=con.filter(x=>x.version===APP_VERSION).length,cnt={};con.forEach(x=>{const k=x.version+" · "+x.plataforma+(x.nativa?" "+x.nativa:"");cnt[k]=(cnt[k]||0)+1});
+      return `<h3 class="dv-h">Versiones</h3><div class="dv-kpis">${kpi(al,"Al día ("+APP_VERSION+")")}${kpi(con.length-al,"Desactualizados")}${kpi(V.length-con.length,"Sin abrir desde 3.9")}</div>
+      <div class="dv-vers">${Object.entries(cnt).sort().reverse().map(([k,n])=>`<span class="${k.startsWith(APP_VERSION+" ")?"ok":"old"}">${esc(k)} <b>${n}</b></span>`).join("")}</div>
+      <details class="dv-det"><summary>Ver por usuario</summary>${V.map(x=>`<div class="dv-vu"><span>${esc(x.email)}</span><span class="${x.version===APP_VERSION?"ok":"old"}">${x.version?esc(x.version+" · "+x.plataforma+(x.nativa?" (app "+x.nativa+")":"")):"—"}</span><small>${x.visto?new Date(x.visto).toLocaleDateString("es-CO",{day:"numeric",month:"short"}):""}</small></div>`).join("")}</details>`})():""}
     <h3 class="dv-h">Dar Pro por correo</h3>
     <form id="fPlan" class="dv-row"><input id="plMail" type="email" placeholder="correo@gmail.com" autocomplete="off"><select id="plTipo"><option value="pro:30">Pro 30 días</option><option value="pro:365">Pro 1 año</option><option value="pro:">Pro sin vencer</option><option value="normal:">Normal</option><option value="desarrollador:">Desarrollador</option></select><button class="primary sm" type="submit">Aplicar</button></form>
     <h3 class="dv-h">Aviso dentro de la app</h3>
@@ -127,4 +131,13 @@ async function cargarAvisoApp(){
   if(!el){el=document.createElement("section");el.id="avisoApp";el.className="aviso-app";const v=$("#v-resumen");v&&v.prepend(el)}
   el.innerHTML=`<div><b>${esc(a.titulo)}</b><p>${esc(a.cuerpo)}</p></div><button type="button" class="x" aria-label="Cerrar aviso">×</button>`;
   el.querySelector("button").onclick=()=>{vistos.push(a.id);try{localStorage.setItem("luca-avisos-vistos",JSON.stringify(vistos.slice(-50)))}catch(e){}el.remove()};
+}
+
+/* Registra la versión que usa este usuario (para el panel de desarrollador) */
+async function reportarVersion(){
+  if(!user||!sb)return;
+  try{const nat=!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform());
+    const plataforma=nat?"android":(matchMedia("(display-mode: standalone)").matches||navigator.standalone)?"pwa":"web";
+    let nativa=null;if(nat&&Capacitor.Plugins&&Capacitor.Plugins.App){try{nativa=(await Capacitor.Plugins.App.getInfo()).version}catch(e){}}
+    await sb.from("app_versiones").upsert({user_id:user.id,version:APP_VERSION,plataforma,nativa,visto:new Date().toISOString()})}catch(e){}
 }

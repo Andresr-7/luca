@@ -1076,3 +1076,7 @@ textarea{font:inherit;font-size:17px;width:100%;border-radius:10px;padding:11px 
 .dv-bar i{display:block;width:70%;min-height:3px;background:var(--primary);border-radius:4px}.dv-bar b{font-size:11px;color:var(--ink);font-weight:600}
 .aviso-app{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border-radius:14px;padding:14px 16px;margin-bottom:14px;border-left:4px solid var(--primary)}
 .aviso-app div{flex:1}.aviso-app b{font-size:16px}.aviso-app p{margin:4px 0 0;font-size:15px;color:var(--mute)}
+.dv-vers{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.dv-vers span{padding:5px 10px;border-radius:999px;font-size:13px;background:var(--fill-2)}
+.dv-vers .ok,.dv-vu .ok{color:#1a7f37}.dv-vers .old,.dv-vu .old{color:#b35900}
+.dv-det summary{cursor:pointer;color:var(--primary);font-size:15px;padding:6px 0}
+.dv-vu{display:grid;grid-template-columns:1fr auto auto;gap:8px;font-size:13px;padding:6px 0;border-bottom:1px solid var(--sep,#e5e5ea)}.dv-vu span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dv-vu small{color:var(--mute)}

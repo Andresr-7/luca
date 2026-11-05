@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.9.0
+- Panel: versiones de la app por usuario (al día / desactualizados, web, PWA o Android).
+
 ## 3.8.0
 - Panel de desarrollador: actividad (gastos hoy/7 días, recibos, gráfico 7 días), dar Pro por correo y avisos dentro de la app.
 - La opción de descargar el APK ya no aparece dentro de la app de Google Play.
