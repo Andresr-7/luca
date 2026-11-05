@@ -47,7 +47,7 @@ async function panelDev(){
   if(!esDev())return;
   openSheet("Panel de desarrollador",'<p class="hint">Cargando…</p>');
   const [r,u,ac,vs]=await Promise.all([sb.rpc("admin_resumen"),sb.rpc("admin_usuarios"),sb.rpc("admin_actividad"),sb.rpc("admin_versiones")]);const A=(ac&&ac.data)||null;const V=(vs&&!vs.error&&vs.data)||null;
-  if(r.error||u.error){$("#sheetBody").innerHTML='<p class="hint">No se pudo cargar. ¿Ya ejecutaste supabase/push-admin.sql en Supabase?</p>';return}
+  if(r.error||u.error){$("#sheetBody").innerHTML='<p class="hint">No se pudo cargar el panel.</p><p class="hint" style="font-family:ui-monospace,monospace;font-size:12px">'+esc(((r.error||u.error).message||"")+" "+((r.error||u.error).code||""))+'</p><button class="primary" id="dvReint">Reintentar</button>';$("#dvReint").onclick=async()=>{try{await sb.auth.refreshSession()}catch(e){}panelDev()};return}
   const R=r.data||{},U=u.data||[];
   const kpi=(n,t)=>`<div class="dv-kpi"><b>${n??0}</b><span>${t}</span></div>`;
   const fila=x=>`<div class="dv-user"><div class="dv-u-main"><b>${esc(x.email)}</b><small>${esc(x.tipo)}${x.pro_hasta?" · hasta "+x.pro_hasta.split("-").reverse().join("/"):""} · ${x.gastos} gastos${x.push?" · push":""}</small></div>
