@@ -1070,3 +1070,9 @@ label.check:has(>input.raw){justify-content:flex-start}label.check:has(>input.ra
 .dv-user select{width:auto;min-height:34px;font-size:14px;padding:4px 8px}
 textarea{font:inherit;font-size:17px;width:100%;border-radius:10px;padding:11px 14px;resize:vertical;color:var(--ink)}
 .dv-diag{font-size:13px;color:var(--mute);background:var(--fill-2);border-radius:12px;padding:10px 14px;display:flex;flex-direction:column;gap:3px}
+.dv-row{display:flex;gap:8px;flex-wrap:wrap}.dv-row input{flex:1 1 180px}.dv-row select{flex:0 0 auto;width:auto}
+.dv-bars{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:110px;background:var(--fill-2);border-radius:12px;padding:10px}
+.dv-bar{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:3px;font-size:11px;color:var(--mute)}
+.dv-bar i{display:block;width:70%;min-height:3px;background:var(--primary);border-radius:4px}.dv-bar b{font-size:11px;color:var(--ink);font-weight:600}
+.aviso-app{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border-radius:14px;padding:14px 16px;margin-bottom:14px;border-left:4px solid var(--primary)}
+.aviso-app div{flex:1}.aviso-app b{font-size:16px}.aviso-app p{margin:4px 0 0;font-size:15px;color:var(--mute)}

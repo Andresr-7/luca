@@ -319,7 +319,7 @@ async function start(u){
   if(/[?&]code=|access_token|error_description|type=recovery/.test(location.search+location.hash))history.replaceState(null,"",location.pathname);
   let ok=false;
   try{await loadAll();ok=true;setSync(navigator.onLine===false?"Sin conexión":"Sincronizado")}catch(e){setSync("Sin conexión");toast("No se pudieron cargar tus datos. Revisa tu conexión.")}
-  loadPerfil().then(()=>{render();if(typeof pushAlEntrar==="function")pushAlEntrar()}).catch(()=>{});
+  loadPerfil().then(()=>{render();if(typeof pushAlEntrar==="function")pushAlEntrar();if(typeof cargarAvisoApp==="function")cargarAvisoApp()}).catch(()=>{});
   subscribe();actualizarTRM();
   if(pendingRecovery){pendingRecovery=false;nuevaClaveSheet()}
   else if(ok)maybeOnboard();
@@ -990,7 +990,7 @@ $("#fCat").onsubmit=async e=>{e.preventDefault();const n=$("#catNom").value.trim
 document.querySelectorAll("#app input").forEach(i=>i.setAttribute("autocomplete","off"));
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(f)leerRespaldo(f);e.target.value=""});
 /* ---------- Tu cuenta ---------- */
-const APP_VERSION="3.7.0";
+const APP_VERSION="3.8.0";
 const REPO_URL="https://github.com/Andresr-7/luca";
 const SOPORTE="luca.app.col@gmail.com";
 function nombreUsuario(){
@@ -1087,7 +1087,7 @@ function renderPlan(){
 }
 
 /* ---------- Ayuda y acerca de ---------- */
-function esAndroidWeb(){return /Android/i.test(navigator.userAgent)&&!matchMedia("(display-mode: standalone)").matches&&!document.referrer.startsWith("android-app://")}
+function esAndroidWeb(){return /Android/i.test(navigator.userAgent)&&!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform())&&!/; wv\)/.test(navigator.userAgent)&&!matchMedia("(display-mode: standalone)").matches&&!document.referrer.startsWith("android-app://")}
 if(esAndroidWeb())$("#androidDl").hidden=false;
 (()=>{const el=$("#ayudaPanel");if(!el)return;
   const link=(href,txt,ext)=>`<a class="item row-btn" href="${href}"${ext?' target="_blank" rel="noopener"':""}><span class="main">${txt}</span><span class="chev" aria-hidden="true">›</span></a>`;

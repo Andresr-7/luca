@@ -46,7 +46,7 @@ const esDev=()=>typeof perfil!=="undefined"&&perfil&&perfil.rol==="desarrollador
 async function panelDev(){
   if(!esDev())return;
   openSheet("Panel de desarrollador",'<p class="hint">Cargando…</p>');
-  const [r,u]=await Promise.all([sb.rpc("admin_resumen"),sb.rpc("admin_usuarios")]);
+  const [r,u,ac]=await Promise.all([sb.rpc("admin_resumen"),sb.rpc("admin_usuarios"),sb.rpc("admin_actividad")]);const A=(ac&&ac.data)||null;
   if(r.error||u.error){$("#sheetBody").innerHTML='<p class="hint">No se pudo cargar. ¿Ya ejecutaste supabase/push-admin.sql en Supabase?</p>';return}
   const R=r.data||{},U=u.data||[];
   const kpi=(n,t)=>`<div class="dv-kpi"><b>${n??0}</b><span>${t}</span></div>`;
@@ -54,6 +54,15 @@ async function panelDev(){
     <select data-mail="${esc(x.email)}" aria-label="Cambiar tipo de ${esc(x.email)}"><option value="">Cambiar…</option><option value="pro:30">Pro 30 días</option><option value="pro:365">Pro 1 año</option><option value="pro:">Pro sin vencer</option><option value="desarrollador:">Desarrollador</option><option value="normal:">Normal</option></select></div>`;
   $("#sheetBody").innerHTML=`<div class="stack">
     <div class="dv-kpis">${kpi(R.usuarios,"Usuarios")}${kpi(R.activos7,"Activos 7 días")}${kpi(R.nuevos7,"Nuevos 7 días")}${kpi(R.pro,"Pro")}${kpi(R.push,"Con push")}${kpi(R.gastos,"Gastos")}</div>
+    ${A?`<h3 class="dv-h">Actividad</h3><div class="dv-kpis">${kpi(A.gastos_hoy,"Gastos hoy")}${kpi(A.gastos_7,"Gastos 7 días")}${kpi(A.recibos,"Recibos escaneados")}</div>
+    <div class="dv-bars">${(A.por_dia||[]).map(d=>{const mx=Math.max(1,...A.por_dia.map(x=>x.n));return `<div class="dv-bar"><i style="height:${Math.round(d.n/mx*100)}%"></i><b>${d.n}</b><span>${d.dia}</span></div>`}).join("")}</div>`:""}
+    <h3 class="dv-h">Dar Pro por correo</h3>
+    <form id="fPlan" class="dv-row"><input id="plMail" type="email" placeholder="correo@gmail.com" autocomplete="off"><select id="plTipo"><option value="pro:30">Pro 30 días</option><option value="pro:365">Pro 1 año</option><option value="pro:">Pro sin vencer</option><option value="normal:">Normal</option><option value="desarrollador:">Desarrollador</option></select><button class="primary sm" type="submit">Aplicar</button></form>
+    <h3 class="dv-h">Aviso dentro de la app</h3>
+    <p class="hint">Sale como tarjeta arriba en Resumen cuando abren Luca. No necesita permiso de notificaciones.</p>
+    <form id="fAviso" class="stack"><input id="avTit" maxlength="60" placeholder="Título, ej. Mantenimiento esta noche"><textarea id="avCue" maxlength="240" rows="2" placeholder="Mensaje"></textarea>
+      <select id="avPub"><option value="todos">Todos</option><option value="pro">Solo Pro</option><option value="normal">Solo normales</option></select>
+      <button class="primary" type="submit">Publicar aviso</button><button type="button" class="ghost" id="avQuitar">Quitar avisos activos</button></form>
     <div class="dv-diag" id="dvDiag">Revisando este celular…</div>
     <button type="button" class="scan-btn" id="dvProbar">Probar notificación en este celular</button>
     <h3 class="dv-h">Enviar notificación</h3>
@@ -66,6 +75,11 @@ async function panelDev(){
     <h3 class="dv-h">Usuarios (${U.length})</h3><input id="dvBus" placeholder="Buscar por correo" autocomplete="off">
     <div class="ios-list solo" id="dvLista">${U.map(fila).join("")}</div></div>`;
   diagPush();
+  $("#fPlan").onsubmit=async e=>{e.preventDefault();const m=$("#plMail").value.trim();if(!m){toast("Escribe el correo");return}const [t,d]=$("#plTipo").value.split(":");
+    const {data,error}=await sb.rpc("admin_plan",{correo:m,tipo:t,dias:d?+d:null});toast(error?"No se pudo cambiar":data);if(!error&&!/No existe/.test(data))panelDev()};
+  $("#fAviso").onsubmit=async e=>{e.preventDefault();const t=$("#avTit").value.trim(),c=$("#avCue").value.trim();if(!t||!c){toast("Escribe título y mensaje");return}
+    const {data,error}=await sb.rpc("admin_aviso",{titulo:t,cuerpo:c,publico:$("#avPub").value});toast(error?"No se pudo publicar. ¿Ejecutaste supabase/avisos-admin.sql?":data);if(!error){$("#avTit").value="";$("#avCue").value=""}};
+  $("#avQuitar").onclick=async()=>{const {data,error}=await sb.rpc("admin_avisos_quitar");toast(error?"No se pudo":data)};
   $("#dvProbar").onclick=async()=>{try{if(Notification.permission!=="granted"&&await Notification.requestPermission()!=="granted"){toast("Este celular tiene las notificaciones bloqueadas");return}
     const reg=await navigator.serviceWorker.ready;await reg.showNotification("Prueba de Luca",{body:"Si ves esto, este celular puede mostrar notificaciones.",icon:"icons/icon-192.png",badge:"icons/icon-192.png",tag:"luca-prueba"});toast("Prueba enviada. Revisa la barra de notificaciones.")}
     catch(e){toast("Este celular no pudo mostrar la notificación: "+(e.message||e))}};
@@ -103,3 +117,14 @@ async function diagPush(){const el=$("#dvDiag");if(!el)return;const L=[];
       L.push("Servicio: "+(/apple/.test(s.endpoint)?"Apple":/google|fcm/.test(s.endpoint)?"Google (Chrome/Android)":/mozilla/.test(s.endpoint)?"Firefox":/windows|wns/.test(s.endpoint)?"Windows":"otro"))}
   }catch(e){L.push("No se pudo revisar: "+(e.message||e))}
   el.innerHTML=L.map(x=>"<div>"+esc(x)+"</div>").join("")}
+
+/* Avisos dentro de la app: la tarjeta más reciente que el usuario no haya cerrado */
+async function cargarAvisoApp(){
+  if(!user||!sb)return;let vistos=[];try{vistos=JSON.parse(localStorage.getItem("luca-avisos-vistos")||"[]")}catch(e){}
+  let data;try{const r=await sb.from("app_avisos").select("id,titulo,cuerpo,publico,creado");if(r.error||!r.data)return;data=r.data.sort((x,y)=>String(y.creado).localeCompare(String(x.creado)))}catch(e){return}
+  const pro=typeof isPro==="function"&&isPro();const a=data.find(x=>!vistos.includes(x.id)&&(x.publico==="todos"||(x.publico==="pro"&&pro)||(x.publico==="normal"&&!pro)));
+  let el=$("#avisoApp");if(!a){el&&el.remove();return}
+  if(!el){el=document.createElement("section");el.id="avisoApp";el.className="aviso-app";const v=$("#v-resumen");v&&v.prepend(el)}
+  el.innerHTML=`<div><b>${esc(a.titulo)}</b><p>${esc(a.cuerpo)}</p></div><button type="button" class="x" aria-label="Cerrar aviso">×</button>`;
+  el.querySelector("button").onclick=()=>{vistos.push(a.id);try{localStorage.setItem("luca-avisos-vistos",JSON.stringify(vistos.slice(-50)))}catch(e){}el.remove()};
+}

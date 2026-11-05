@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.8.0
+- Panel de desarrollador: actividad (gastos hoy/7 días, recibos, gráfico 7 días), dar Pro por correo y avisos dentro de la app.
+- La opción de descargar el APK ya no aparece dentro de la app de Google Play.
+
 ## 3.5.0 — 2026-10-28
 - Push notifications: the app asks once (after 20 s of use) or from Más → "Activar notificaciones", stores the Web Push subscription in `push_subs` (RLS: own rows only); service worker shows incoming pushes.
 - Developer panel (Más → Panel de desarrollador, only for `rol = desarrollador`): KPIs (users, active and new in 7 days, Pro, push subscribers, expenses), send a push to everyone, Pro, normal users or one email, last sends, searchable user list with one-tap plan changes (Pro 30 days / 1 year / no expiry, developer, normal).
