@@ -1000,8 +1000,8 @@ button.add,.add-btn,button.ghost.wide,.block>button.ghost{background:transparent
 #addAcct,#addCard,#addCuenta,#addTarjeta,[id^="add"]:not(.primary){background:transparent!important;color:var(--primary)!important;box-shadow:none!important}
 
 /* ---------- v3.2: solo modo claro + controles nativos de iOS ---------- */
-:root{color-scheme:light}
-#temaSeg,#temaSeg+.hint{display:none!important}
+:root{color-scheme:light}:root[data-theme="dark"]{color-scheme:dark}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark}}
 /* Casillas como interruptores de iOS (UISwitch) */
 input[type=checkbox]:not(.raw){-webkit-appearance:none;appearance:none;width:51px!important;height:31px!important;min-height:31px!important;flex:none;
   border-radius:99px;background:rgba(120,120,128,.16)!important;position:relative;margin:0;padding:0!important;cursor:pointer;border:0!important;
@@ -1080,3 +1080,17 @@ textarea{font:inherit;font-size:17px;width:100%;border-radius:10px;padding:11px 
 .dv-vers .ok,.dv-vu .ok{color:#1a7f37}.dv-vers .old,.dv-vu .old{color:#b35900}
 .dv-det summary{cursor:pointer;color:var(--primary);font-size:15px;padding:6px 0}
 .dv-vu{display:grid;grid-template-columns:1fr auto auto;gap:8px;font-size:13px;padding:6px 0;border-bottom:1px solid var(--sep,#e5e5ea)}.dv-vu span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dv-vu small{color:var(--mute)}
+
+/* v4.0 · Modo oscuro de iOS: mismos colores del sistema, ajustes finos */
+:root[data-theme="dark"] button.item,:root[data-theme="dark"] .list button.item{background:transparent!important;box-shadow:none!important;border-radius:0!important}
+:root[data-theme="dark"] input[type=checkbox]:not(.raw){background:rgba(120,120,128,.32)!important}
+:root[data-theme="dark"] input[type=checkbox]:not(.raw):checked{background:#30D158!important}
+:root[data-theme="dark"] .sheet::before{background:rgba(235,235,245,.3)!important}
+:root[data-theme="dark"] .aviso-app{background:var(--surface)}
+:root[data-theme="dark"] img,:root[data-theme="dark"] video{color-scheme:normal}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.item,:root:not([data-theme="light"]) .list button.item{background:transparent!important;box-shadow:none!important;border-radius:0!important}
+:root:not([data-theme="light"]) input[type=checkbox]:not(.raw){background:rgba(120,120,128,.32)!important}
+:root:not([data-theme="light"]) input[type=checkbox]:not(.raw):checked{background:#30D158!important}
+:root:not([data-theme="light"]) .sheet::before{background:rgba(235,235,245,.3)!important}
+:root:not([data-theme="light"]) .aviso-app{background:var(--surface)}
+:root:not([data-theme="light"]) img,:root:not([data-theme="light"]) video{color-scheme:normal}}

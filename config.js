@@ -1,3 +1,4 @@
+/* Tema antes de pintar */try{const t=localStorage.getItem("luca-tema")||"auto",r=document.documentElement;if(t==="light"||t==="dark")r.dataset.theme=t;else delete r.dataset.theme}catch(e){}
 /* Configuración de Luca.
    Esta clave es PÚBLICA a propósito (Supabase la llama "anon" o "publishable"): la seguridad la ponen las reglas
    de la base de datos (Row Level Security), que solo dejan a cada usuario ver y cambiar sus propios datos.

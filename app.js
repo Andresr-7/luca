@@ -990,7 +990,7 @@ $("#fCat").onsubmit=async e=>{e.preventDefault();const n=$("#catNom").value.trim
 document.querySelectorAll("#app input").forEach(i=>i.setAttribute("autocomplete","off"));
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(f)leerRespaldo(f);e.target.value=""});
 /* ---------- Tu cuenta ---------- */
-const APP_VERSION="3.9.0";
+const APP_VERSION="4.0.0";
 const REPO_URL="https://github.com/Andresr-7/luca";
 const SOPORTE="luca.app.col@gmail.com";
 function nombreUsuario(){
@@ -1061,15 +1061,17 @@ function exportarCSV(){
 }
 
 /* ---------- Apariencia (por dispositivo) ---------- */
-function temaGuardado(){return "light"} /* Luca usa solo el modo claro de iOS */
+function temaGuardado(){try{const t=localStorage.getItem("luca-tema");if(t==="light"||t==="dark"||t==="auto")return t}catch(e){}return "auto"}
 function aplicarTema(t){const H=document.documentElement;H.classList.add("tema-cambio");clearTimeout(aplicarTema.t);aplicarTema.t=setTimeout(()=>H.classList.remove("tema-cambio"),600);
   const r=document.documentElement;if(t==="light"||t==="dark")r.dataset.theme=t;else delete r.dataset.theme;
   try{localStorage.setItem("luca-tema",t)}catch(e){}
   const dark=t==="dark"||(t==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);
-  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute("content","#F2F2F7"));
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute("content",dark?"#000000":"#F2F2F7"));
+  const cs=document.querySelector('meta[name="color-scheme"]');if(cs)cs.setAttribute("content",t==="auto"?"light dark":t);
   document.querySelectorAll("#temaSeg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.tema===t));
 }
 aplicarTema(temaGuardado());
+try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{if(temaGuardado()==="auto")aplicarTema("auto")})}catch(e){}
 $("#temaSeg").addEventListener("click",e=>{const b=e.target.closest("button[data-tema]");if(b)aplicarTema(b.dataset.tema)});
 
 /* ---------- Plan ---------- */

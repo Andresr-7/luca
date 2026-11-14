@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.0.0
+- Modo oscuro de iOS: Automático, Claro u Oscuro en Más → Apariencia.
+
 ## 3.9.0
 - Panel: versiones de la app por usuario (al día / desactualizados, web, PWA o Android).
 
